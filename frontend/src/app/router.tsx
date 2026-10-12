@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from 'react-router-dom'
 import AppShell from '../components/AppShell'
 import PlaceholderPage from '../components/PlaceholderPage'
 import ProtectedRoute from '../components/ProtectedRoute'
+import RouteError from '../components/RouteError'
 import LoginPage from '../features/auth/LoginPage'
 import CalmPage from '../features/calm/CalmPage'
 import ExercisePlayerPage from '../features/calm/ExercisePlayerPage'
@@ -11,7 +12,7 @@ import DiaryPage from '../features/diary/DiaryPage'
 import HealthPage from '../features/health/HealthPage'
 
 export const router = createBrowserRouter([
-  { path: '/login', element: <LoginPage /> },
+  { path: '/login', element: <LoginPage />, errorElement: <RouteError /> },
   {
     path: '/',
     element: (
@@ -19,6 +20,7 @@ export const router = createBrowserRouter([
         <AppShell />
       </ProtectedRoute>
     ),
+    errorElement: <RouteError />,
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'diary', element: <DiaryPage /> },
