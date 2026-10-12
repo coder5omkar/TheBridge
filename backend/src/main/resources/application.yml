@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: thebridge
+  config:
+    # Secrets live in the repo-root .env (gitignored). Both locations are optional so
+    # production deployments can inject real environment variables instead.
+    import:
+      - optional:file:../.env[.properties]
+      - optional:file:.env[.properties]
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      initialization-fail-timeout: 10000
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+
+server:
+  # Local dev only; change when deploying.
+  address: 127.0.0.1
+  port: 8080
+
+app:
+  jwt:
+    secret: ${JWT_SECRET}
+    ttl: PT12H
+    issuer: thebridge
+  cors:
+    allowed-origins:
+      - http://localhost:5173
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

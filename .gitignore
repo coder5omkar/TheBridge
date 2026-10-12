@@ -1,0 +1,27 @@
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Java / Gradle / Maven
+target/
+build/
+bin/
+!gradle/wrapper/gradle-wrapper.jar
+.mvn/
+
+# Node / Vite
+node_modules/
+dist/
+*.local
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/

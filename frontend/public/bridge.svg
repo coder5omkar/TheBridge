@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#f4f3ef"/>
+  <!-- bridge deck -->
+  <path d="M8 40h48" stroke="#22303a" stroke-width="4" stroke-linecap="round"/>
+  <!-- bridge arc -->
+  <path d="M14 40c6-12 30-12 36 0" fill="none" stroke="#4e8b73" stroke-width="4" stroke-linecap="round"/>
+  <!-- gem -->
+  <path d="M32 14l6 6-6 8-6-8z" fill="#7b6ff0"/>
+  <!-- pillars -->
+  <path d="M18 40v10M46 40v10" stroke="#22303a" stroke-width="4" stroke-linecap="round"/>
+</svg>
