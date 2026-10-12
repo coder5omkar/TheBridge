@@ -1,5 +1,20 @@
 # TheBridge
 
+[![Java](https://img.shields.io/badge/Java-26-orange?logo=openjdk&logoColor=white)](https://openjdk.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.1-6DB33F?logo=springboot&logoColor=white)](https://spring.io/projects/spring-boot)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Flyway](https://img.shields.io/badge/Flyway-migrations-CC0200?logo=flyway&logoColor=white)](https://flywaydb.org/)
+<br>
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?logo=vite&logoColor=white)](https://vite.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind%20CSS-4-06B6D4?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![TanStack Query](https://img.shields.io/badge/TanStack%20Query-5-FF4154?logo=reactquery&logoColor=white)](https://tanstack.com/query)
+<br>
+[![GitHub stars](https://img.shields.io/github/stars/coder5omkar/TheBridge?style=flat&color=7B6FF0)](https://github.com/coder5omkar/TheBridge/stargazers)
+[![Last commit](https://img.shields.io/github/last-commit/coder5omkar/TheBridge?color=4E8B73)](https://github.com/coder5omkar/TheBridge/commits)
+[![Status](https://img.shields.io/badge/status-Phase%201%20complete-7B6FF0)](docs/PLAN.md)
+
 *One person's private bridge between mind, body, and daily routine.*
 
 TheBridge is a personal life companion fusing three things:
