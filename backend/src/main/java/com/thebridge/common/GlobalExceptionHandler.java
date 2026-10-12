@@ -29,6 +29,11 @@ public class GlobalExceptionHandler {
 		return problem(HttpStatus.BAD_REQUEST, detail.isBlank() ? "Validation failed" : detail);
 	}
 
+	@ExceptionHandler(IllegalArgumentException.class)
+	ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+		return problem(HttpStatus.BAD_REQUEST, ex.getMessage());
+	}
+
 	private ProblemDetail problem(HttpStatus status, String detail) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
 		problem.setTitle(status.getReasonPhrase());

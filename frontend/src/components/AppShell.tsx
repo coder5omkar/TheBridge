@@ -7,10 +7,7 @@ const NAV = [
   { to: '/', label: 'Today', icon: '☀️', end: true },
   { to: '/diary', label: 'Diary', icon: '✍️', end: false },
   { to: '/calm', label: 'Calm', icon: '🧘', end: false },
-  { to: '/thoughts', label: 'Thoughts', icon: '💭', end: false },
-  { to: '/sleep', label: 'Sleep', icon: '🌙', end: false },
-  { to: '/meals', label: 'Meals', icon: '🍽️', end: false },
-  { to: '/weight', label: 'Weight', icon: '⚖️', end: false },
+  { to: '/health', label: 'Health', icon: '🩺', end: false },
   { to: '/garden', label: 'Garden', icon: '🪴', end: false },
 ]
 

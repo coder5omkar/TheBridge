@@ -32,6 +32,9 @@ public class User {
 	@Column(name = "day_start_hour", nullable = false)
 	private int dayStartHour;
 
+	@Column(name = "height_cm", precision = 5, scale = 1)
+	private java.math.BigDecimal heightCm;
+
 	@Column(name = "created_at", nullable = false, insertable = false, updatable = false)
 	private Instant createdAt;
 
@@ -77,6 +80,14 @@ public class User {
 
 	public void setDayStartHour(int dayStartHour) {
 		this.dayStartHour = dayStartHour;
+	}
+
+	public java.math.BigDecimal getHeightCm() {
+		return heightCm;
+	}
+
+	public void setHeightCm(java.math.BigDecimal heightCm) {
+		this.heightCm = heightCm;
 	}
 
 	public Instant getCreatedAt() {

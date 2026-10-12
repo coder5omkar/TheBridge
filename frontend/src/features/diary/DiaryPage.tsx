@@ -3,6 +3,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import GemBurst from '../../components/GemBurst'
 import type { DiaryResponse, DiaryView } from '../../lib/types'
+import SleepCard from './SleepCard'
+import ThoughtsWidget from './ThoughtsWidget'
 
 const MOODS = ['😞', '😕', '😐', '🙂', '😄']
 
@@ -80,12 +82,14 @@ export default function DiaryPage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Today's diary</h1>
         <p className="mt-1 text-sm text-muted">
-          A few honest lines. Saving your first entry earns +2 💎, the evening review +3 💎.
+          Everything that makes up a day — mood, thoughts, sleep, and the words in between.
         </p>
       </header>
 
       <section className="rounded-3xl border border-line bg-surface p-6">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">How are you feeling?</h2>
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
+          How are you feeling?
+        </h2>
         <div className="mt-3 flex gap-2">
           {MOODS.map((emoji, index) => {
             const value = index + 1
@@ -96,9 +100,7 @@ export default function DiaryPage() {
                 type="button"
                 onClick={() => update({ mood: active ? null : value })}
                 className={`flex h-12 w-12 items-center justify-center rounded-2xl border text-xl transition-all ${
-                  active
-                    ? 'border-sage bg-sage-mist scale-105'
-                    : 'border-line bg-paper hover:border-sage/50'
+                  active ? 'border-sage bg-sage-mist scale-105' : 'border-line bg-paper hover:border-sage/50'
                 }`}
                 title={`Mood ${value}/5`}
               >
@@ -125,7 +127,7 @@ export default function DiaryPage() {
         </div>
       </section>
 
-      <section className="flex flex-col gap-5 rounded-3xl border border-line bg-surface p-6">
+      <section className="rounded-3xl border border-line bg-surface p-6">
         <label className="flex flex-col gap-1.5 text-xs font-medium text-ink-soft">
           🌅 One intention for today
           <input
@@ -136,17 +138,25 @@ export default function DiaryPage() {
             maxLength={500}
           />
         </label>
+      </section>
 
+      <ThoughtsWidget />
+
+      <section className="rounded-3xl border border-line bg-surface p-6">
         <label className="flex flex-col gap-1.5 text-xs font-medium text-ink-soft">
-          💭 What's on your mind
+          📖 Journal
           <textarea
-            className="min-h-28 rounded-xl border border-line bg-paper px-4 py-2.5 text-sm font-normal text-ink outline-none transition-colors focus:border-sage"
+            className="min-h-32 rounded-xl border border-line bg-paper px-4 py-2.5 text-sm font-normal text-ink outline-none transition-colors focus:border-sage"
             value={form.body}
             onChange={(event) => update({ body: event.target.value })}
-            placeholder="Anything at all — no structure needed."
+            placeholder="The day so far, in your own words."
           />
         </label>
+      </section>
 
+      <SleepCard />
+
+      <section className="rounded-3xl border border-line bg-surface p-6">
         <label className="flex flex-col gap-1.5 text-xs font-medium text-ink-soft">
           🌙 Evening review <span className="font-normal text-gem">+3 💎 once</span>
           <textarea
@@ -167,12 +177,8 @@ export default function DiaryPage() {
         >
           {mutation.isPending ? 'Saving…' : 'Save today'}
         </button>
-        {savedAt && !mutation.isPending && (
-          <span className="text-xs text-muted">Saved at {savedAt} ✓</span>
-        )}
-        {mutation.isError && (
-          <span className="text-xs text-rose-700">{mutation.error.message}</span>
-        )}
+        {savedAt && !mutation.isPending && <span className="text-xs text-muted">Saved at {savedAt} ✓</span>}
+        {mutation.isError && <span className="text-xs text-rose-700">{mutation.error.message}</span>}
       </div>
     </div>
   )

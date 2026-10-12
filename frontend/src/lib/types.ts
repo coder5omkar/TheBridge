@@ -4,6 +4,7 @@ export type UserView = {
   displayName: string
   timezone: string
   dayStartHour: number
+  heightCm: number | null
 }
 
 export type AuthResponse = {
@@ -93,5 +94,46 @@ export type SleepView = {
 
 export type SleepResponse = {
   log: SleepView
+  rewards: Rewards
+}
+
+export type ThoughtKind = 'worry' | 'idea' | 'gratitude' | 'task'
+
+export type ThoughtView = {
+  id: number
+  content: string
+  kind: ThoughtKind
+  status: 'open' | 'released'
+  reframe: string | null
+  createdAt: string
+  releasedAt: string | null
+}
+
+export type ThoughtResponse = {
+  thought: ThoughtView
+  rewards: Rewards
+}
+
+export type HealthSummary = {
+  heightCm: number | null
+  latestWeightKg: number | null
+  latestWeightAt: string | null
+  change7dKg: number | null
+  weights: { date: string; at: string; kg: number }[]
+  mealsToday: number
+  todayMeals: {
+    id: number
+    mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+    description: string | null
+    homeCooked: boolean | null
+    eatenAt: string
+  }[]
+  mealsWeek: number
+  homeCookedRatioWeek: number | null
+  bmi: number | null
+}
+
+export type HealthSummaryResponse = {
+  summary: HealthSummary
   rewards: Rewards
 }

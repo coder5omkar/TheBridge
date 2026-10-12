@@ -40,11 +40,11 @@ export default function DashboardPage() {
     {
       to: '/diary',
       icon: '✍️',
-      label: 'Diary',
+      label: 'Diary & thoughts',
       done: data.today.diary.done,
       detail: data.today.diary.done
         ? `Mood ${data.today.diary.mood ?? '—'}/5 — evening review earns +3 💎`
-        : 'Morning intention, mood, evening review',
+        : 'Mood, intention, thoughts, evening review',
     },
     {
       to: '/calm',
@@ -57,7 +57,7 @@ export default function DashboardPage() {
           : 'A 60-second reset already counts',
     },
     {
-      to: '/sleep',
+      to: '/diary',
       icon: '🌙',
       label: 'Sleep',
       done: data.today.sleep.logged,
@@ -65,7 +65,7 @@ export default function DashboardPage() {
         ? data.today.sleep.durationMinutes != null
           ? `Slept ${formatMinutes(data.today.sleep.durationMinutes)}`
           : 'Wake-up logged'
-        : 'Log your night — bedtime and wake-up',
+        : 'Bedtime and wake-up live in the diary',
     },
   ]
 

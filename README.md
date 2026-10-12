@@ -52,11 +52,19 @@ Open <http://localhost:5173>.
 **First run:** the app detects an empty database and offers *Create your account* on the
 login screen. The first account becomes the only account — registration closes behind it.
 
+## Structure
+
+- **Today** — dashboard: checklist, gems, streak, sleep + calm charts
+- **Diary** — the daily hub: mood, energy, intention, thoughts inbox, journal, sleep card, evening review
+- **Calm** — breathing exercises with the 60-second SOS reset
+- **Health** — weight (+BMI via height) and food / eating habits
+- **Garden** — Phase 2 gem sink
+
 ## API (Phase 1)
 
 ```
 POST /api/v1/auth/login        → { token, expiresAt, user }
-GET  /api/v1/auth/me           → current user
+GET  /api/v1/auth/me           → current user (includes heightCm)
 GET  /api/v1/dashboard/today   → checklist state, gems, streak, 14-day sleep & calm charts
 GET  /api/v1/diary/today       → today's entry (204 when empty)   PUT to upsert (+2 💎 first save, +3 💎 evening review)
 GET  /api/v1/calm/exercises    → seeded catalog with breathing patterns
@@ -64,6 +72,13 @@ POST /api/v1/calm/sessions     → record practice (1 💎/min + 2 💎 first of
 GET  /api/v1/sleep/latest      → most recent night
 POST /api/v1/sleep/bedtime     → "going to bed now"
 POST /api/v1/sleep/wake        → "I'm awake" (+1 💎)
+GET  /api/v1/thoughts          → open thoughts (mental inbox)
+POST /api/v1/thoughts          → capture (worry | idea | gratitude | task)
+PATCH /api/v1/thoughts/{id}    → reframe and/or release (+2 💎 once)
+GET  /api/v1/health/summary    → weight trend, BMI, meals today + week stats
+POST /api/v1/health/weight     → weigh-in (+3 💎 first of the week)
+POST /api/v1/health/meals      → log a meal (type, description, home-cooked)
+PATCH /api/v1/health/profile   → height in cm
 GET  /actuator/health          → health probe
 ```
 
@@ -74,6 +89,8 @@ Everything except `/api/v1/auth/**`, `/error` and `/actuator/health` requires
 
 - 1 gem per completed practice minute (min 1), +2 for the first session of the day
 - Diary entry +2 (once), evening review +3 (once), sleep wake +1 (once)
+- Thought released (reframed and let go) +2 (once per thought)
+- First weigh-in of the week +3
 - Soft daily cap of 25 gems; balance is always `SUM(gem_ledger.delta)`
 - SOS is always free and always earns like any other session
 

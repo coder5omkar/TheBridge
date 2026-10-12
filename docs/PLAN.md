@@ -62,6 +62,8 @@ Working title meaning: a bridge between mind and body, day and night, thought an
 | 7 | **Rewards** | Gem ledger, streaks, level, Garden, themes | Anti-frustration economy (section 4) |
 | 8 | **Insights** | Weekly card: 3 auto-generated observations + all graph screens | Templated correlations, always labeled "patterns, not proof" |
 
+**Information architecture note (2026-10-12):** daily-rhythm things live together in **Diary** (mood, energy, intention, journal, thoughts inbox, sleep card, evening review). Slow body signals live in **Health** (weight, height/BMI, food & eating habits). Calm stays its own practice space; weight is *not* part of the daily entry.
+
 ---
 
 ## 4. Gem economy
@@ -259,3 +261,4 @@ Notes:
 | 2026-10-12 | Gems → Garden + themes | Warm, non-competitive sink; avoids paywalling calm |
 | 2026-10-12 | JWT + Argon2, registration self-closing | Single account without a user-management surface |
 | 2026-10-12 | Day boundary configurable (`day_start_hour`) | Night owls must not get "wrong day" diaries |
+| 2026-10-12 | Diary = daily hub; new Health section for weight/food/height; thoughts + sleep folded into diary | One page per daily rhythm; weight and eating are slow signals, not daily journal material |
