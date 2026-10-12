@@ -15,11 +15,13 @@ export default function DashboardPage() {
     return <p className="text-sm text-muted">Loading your day…</p>
   }
 
-  if (query.isError || !query.data) {
+  if (query.isError || !query.data || !query.data.today || !query.data.charts) {
     return (
       <div className="max-w-xl rounded-3xl border border-line bg-surface p-8">
         <h1 className="text-xl font-semibold">Could not load your day</h1>
-        <p className="mt-2 text-sm text-ink-soft">{query.error?.message}</p>
+        <p className="mt-2 text-sm text-ink-soft">
+          {query.error?.message ?? 'The data looks stale — try refreshing the page.'}
+        </p>
       </div>
     )
   }

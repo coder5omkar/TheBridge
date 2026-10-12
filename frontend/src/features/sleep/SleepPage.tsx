@@ -118,7 +118,7 @@ export default function SleepPage() {
       <section className="rounded-3xl border border-line bg-surface p-6">
         <h2 className="text-sm font-semibold">Last 14 nights</h2>
         <p className="mt-1 mb-4 text-xs text-muted">Labelled by wake-up day</p>
-        {charts.data ? (
+        {charts.data?.charts ? (
           <SleepChart points={charts.data.charts.sleep} />
         ) : (
           <p className="text-xs text-muted">Chart loads with your dashboard data.</p>
