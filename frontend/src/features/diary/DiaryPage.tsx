@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import GemBurst from '../../components/GemBurst'
 import type { DiaryResponse, DiaryView } from '../../lib/types'
+import HabitsCard from './HabitsCard'
 import SleepCard from './SleepCard'
 import ThoughtsWidget from './ThoughtsWidget'
 
@@ -82,9 +83,11 @@ export default function DiaryPage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Today's diary</h1>
         <p className="mt-1 text-sm text-muted">
-          Everything that makes up a day — mood, thoughts, sleep, and the words in between.
+          Everything that makes up a day — your rhythm, mood, thoughts, sleep, and the words in between.
         </p>
       </header>
+
+      <HabitsCard />
 
       <section className="rounded-3xl border border-line bg-surface p-6">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">

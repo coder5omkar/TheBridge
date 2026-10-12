@@ -2,13 +2,18 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
 import { formatMinutes } from '../../lib/format'
-import type { DashboardToday } from '../../lib/types'
+import type { DashboardToday, HabitsToday } from '../../lib/types'
 import { CalmChart, SleepChart } from './Charts'
 
 export default function DashboardPage() {
   const query = useQuery({
     queryKey: ['dashboard-today'],
     queryFn: () => api<DashboardToday>('/dashboard/today'),
+  })
+
+  const habits = useQuery({
+    queryKey: ['habits-today'],
+    queryFn: () => api<HabitsToday>('/habits/today'),
   })
 
   if (query.isLoading) {
@@ -36,7 +41,21 @@ export default function DashboardPage() {
     day: 'numeric',
   })
 
+  const rhythmRow = habits.data
+    ? {
+        to: '/diary',
+        icon: '🌿',
+        label: 'My rhythm',
+        done: habits.data.totalCount > 0 && habits.data.doneCount === habits.data.totalCount,
+        detail:
+          habits.data.totalCount > 0
+            ? `${habits.data.doneCount}/${habits.data.totalCount} practices · ${habits.data.weekDone} this week`
+            : 'Build your daily rhythm — one tap to start',
+      }
+    : null
+
   const loop = [
+    ...(rhythmRow ? [rhythmRow] : []),
     {
       to: '/diary',
       icon: '✍️',

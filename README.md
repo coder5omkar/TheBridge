@@ -55,7 +55,7 @@ login screen. The first account becomes the only account — registration closes
 ## Structure
 
 - **Today** — dashboard: checklist, gems, streak, sleep + calm charts
-- **Diary** — the daily hub: mood, energy, intention, thoughts inbox, journal, sleep card, evening review
+- **Diary** — the daily hub: my rhythm (habits with streaks), mood, energy, intention, thoughts inbox, journal, sleep card, evening review
 - **Calm** — breathing exercises with the 60-second SOS reset
 - **Health** — weight (+BMI via height) and food / eating habits
 - **Garden** — Phase 2 gem sink
@@ -79,6 +79,10 @@ GET  /api/v1/health/summary    → weight trend, BMI, meals today + week stats
 POST /api/v1/health/weight     → weigh-in (+3 💎 first of the week)
 POST /api/v1/health/meals      → log a meal (type, description, home-cooked)
 PATCH /api/v1/health/profile   → height in cm
+GET  /api/v1/habits/today      → habits with done state, streaks, last-7-days history
+POST /api/v1/habits            → define a practice (name, emoji, part: morning|afternoon|evening|anytime)
+POST /api/v1/habits/{id}/toggle→ check off / undo (+1 💎 once per habit per day)
+DELETE /api/v1/habits/{id}     → archive a practice (history kept)
 GET  /actuator/health          → health probe
 ```
 
@@ -91,6 +95,7 @@ Everything except `/api/v1/auth/**`, `/error` and `/actuator/health` requires
 - Diary entry +2 (once), evening review +3 (once), sleep wake +1 (once)
 - Thought released (reframed and let go) +2 (once per thought)
 - First weigh-in of the week +3
+- Habit checked off +1 (once per habit per day; undo/redo never double-earns)
 - Soft daily cap of 25 gems; balance is always `SUM(gem_ledger.delta)`
 - SOS is always free and always earns like any other session
 

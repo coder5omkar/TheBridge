@@ -137,3 +137,29 @@ export type HealthSummaryResponse = {
   summary: HealthSummary
   rewards: Rewards
 }
+
+export type HabitPart = 'morning' | 'afternoon' | 'evening' | 'anytime'
+
+export type HabitView = {
+  id: number
+  name: string
+  emoji: string
+  part: HabitPart
+  done: boolean
+  streak: number
+  last7: boolean[]
+}
+
+export type HabitsToday = {
+  date: string
+  habits: HabitView[]
+  doneCount: number
+  totalCount: number
+  weekDone: number
+  weekTotal: number
+}
+
+export type HabitsResponse = {
+  today: HabitsToday
+  rewards: Rewards
+}
