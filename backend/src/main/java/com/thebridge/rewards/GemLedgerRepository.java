@@ -24,4 +24,6 @@ public interface GemLedgerRepository extends JpaRepository<GemLedger, Long> {
 			order by g.createdAt desc
 			""")
 	List<Instant> positiveTimestamps(@Param("userId") Long userId);
+
+	boolean existsByUserIdAndRefTypeAndRefId(Long userId, String refType, Long refId);
 }

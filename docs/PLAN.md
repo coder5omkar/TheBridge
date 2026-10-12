@@ -2,7 +2,7 @@
 
 *One person's private bridge between mind, body, and daily routine.*
 
-**Status:** Phase 0 complete (2026-10-12) — app runs, login works, dashboard fetches from Neon · **Next step:** Phase 1 (diary + calm + gems)
+**Status:** Phase 1 complete (2026-10-12) — diary, calm player + SOS, gems earning, sleep log, dashboard charts · **Next step:** Phase 2 (thoughts, meals, weight, garden)
 **Decisions locked:** single-user app (multi-user later = config change, not rewrite) · Neon Postgres provisioned · gems buy Garden + themes · Spring Boot + Vite React
 
 ---

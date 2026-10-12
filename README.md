@@ -52,19 +52,30 @@ Open <http://localhost:5173>.
 **First run:** the app detects an empty database and offers *Create your account* on the
 login screen. The first account becomes the only account — registration closes behind it.
 
-## API (Phase 0)
+## API (Phase 1)
 
 ```
-GET  /api/v1/auth/status       → { registrationOpen }
-POST /api/v1/auth/register     → { token, expiresAt, user }   (only while no user exists)
 POST /api/v1/auth/login        → { token, expiresAt, user }
-GET  /api/v1/auth/me           → current user (JWT required)
-GET  /api/v1/dashboard/today   → date, gems balance, practice streak (JWT required)
+GET  /api/v1/auth/me           → current user
+GET  /api/v1/dashboard/today   → checklist state, gems, streak, 14-day sleep & calm charts
+GET  /api/v1/diary/today       → today's entry (204 when empty)   PUT to upsert (+2 💎 first save, +3 💎 evening review)
+GET  /api/v1/calm/exercises    → seeded catalog with breathing patterns
+POST /api/v1/calm/sessions     → record practice (1 💎/min + 2 💎 first of day), kind=regular|sos
+GET  /api/v1/sleep/latest      → most recent night
+POST /api/v1/sleep/bedtime     → "going to bed now"
+POST /api/v1/sleep/wake        → "I'm awake" (+1 💎)
 GET  /actuator/health          → health probe
 ```
 
-Everything except `/api/v1/auth/**` and `/actuator/health` requires
+Everything except `/api/v1/auth/**`, `/error` and `/actuator/health` requires
 `Authorization: Bearer <token>`.
+
+### Gem rules
+
+- 1 gem per completed practice minute (min 1), +2 for the first session of the day
+- Diary entry +2 (once), evening review +3 (once), sleep wake +1 (once)
+- Soft daily cap of 25 gems; balance is always `SUM(gem_ledger.delta)`
+- SOS is always free and always earns like any other session
 
 ## Database
 
@@ -74,3 +85,4 @@ schema truth (`ddl-auto: validate` guards drift):
 - `V1__core_schema.sql` — users, diary, thoughts, exercises, sessions, gem ledger, sleep, meals, weight
 - `V2__seed_exercises.sql` — the calm exercise catalog
 - `V3__align_smallint_columns.sql` — integer alignment for Hibernate validation
+- `V4__sleep_flexible_times.sql` — bedtime and wake can be logged independently

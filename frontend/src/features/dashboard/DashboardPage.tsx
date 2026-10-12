@@ -1,12 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
+import { formatMinutes } from '../../lib/format'
 import type { DashboardToday } from '../../lib/types'
-
-const LOOP_ITEMS = [
-  { icon: '✍️', label: 'Diary entry', note: 'Phase 1' },
-  { icon: '🧘', label: 'Calm practice', note: 'Phase 1' },
-  { icon: '🌙', label: 'Sleep log', note: 'Phase 1' },
-]
+import { CalmChart, SleepChart } from './Charts'
 
 export default function DashboardPage() {
   const query = useQuery({
@@ -29,12 +26,46 @@ export default function DashboardPage() {
 
   const data = query.data
   const hour = new Date().getHours()
-  const greeting = hour < 5 ? 'Late night' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+  const greeting =
+    hour < 5 ? 'Late night' : hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
   const dateLabel = new Date(`${data.date}T00:00:00`).toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   })
+
+  const loop = [
+    {
+      to: '/diary',
+      icon: '✍️',
+      label: 'Diary',
+      done: data.today.diary.done,
+      detail: data.today.diary.done
+        ? `Mood ${data.today.diary.mood ?? '—'}/5 — evening review earns +3 💎`
+        : 'Morning intention, mood, evening review',
+    },
+    {
+      to: '/calm',
+      icon: '🧘',
+      label: 'Calm practice',
+      done: data.today.calm.sessions > 0,
+      detail:
+        data.today.calm.minutes > 0
+          ? `${formatMinutes(data.today.calm.minutes)} practiced today`
+          : 'A 60-second reset already counts',
+    },
+    {
+      to: '/sleep',
+      icon: '🌙',
+      label: 'Sleep',
+      done: data.today.sleep.logged,
+      detail: data.today.sleep.logged
+        ? data.today.sleep.durationMinutes != null
+          ? `Slept ${formatMinutes(data.today.sleep.durationMinutes)}`
+          : 'Wake-up logged'
+        : 'Log your night — bedtime and wake-up',
+    },
+  ]
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,7 +91,9 @@ export default function DashboardPage() {
             </span>
           </p>
           <p className="mt-1 text-xs text-muted">
-            {data.streak.practicedToday ? 'Practiced today — beautiful.' : 'Any calm practice keeps it alive.'}
+            {data.streak.practicedToday
+              ? 'Practiced today — beautiful.'
+              : 'Any calm practice or log keeps it alive.'}
           </p>
         </div>
       </section>
@@ -71,22 +104,39 @@ export default function DashboardPage() {
           capture → regulate → see the pattern → adjust → get rewarded
         </p>
         <ul className="mt-5 flex flex-col gap-3">
-          {LOOP_ITEMS.map((item) => (
-            <li
-              key={item.label}
-              className="flex items-center gap-3 rounded-2xl border border-line bg-paper px-4 py-3"
-            >
-              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-line bg-surface text-[10px] text-muted">
-                ○
-              </span>
-              <span aria-hidden>{item.icon}</span>
-              <span className="text-sm text-ink-soft">{item.label}</span>
-              <span className="ml-auto rounded-full bg-amber-soft px-2.5 py-0.5 text-[10px] font-medium text-ink-soft">
-                {item.note}
-              </span>
+          {loop.map((item) => (
+            <li key={item.label}>
+              <Link
+                to={item.to}
+                className="flex items-center gap-3 rounded-2xl border border-line bg-paper px-4 py-3 transition-colors hover:border-sage"
+              >
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
+                    item.done ? 'bg-sage text-white' : 'border border-line bg-surface text-muted'
+                  }`}
+                >
+                  {item.done ? '✓' : '○'}
+                </span>
+                <span aria-hidden>{item.icon}</span>
+                <span className="text-sm font-medium text-ink-soft">{item.label}</span>
+                <span className="ml-auto hidden text-xs text-muted sm:block">{item.detail}</span>
+              </Link>
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-3xl border border-line bg-surface p-6">
+          <h2 className="text-sm font-semibold">Sleep · last 14 nights</h2>
+          <p className="mt-1 mb-4 text-xs text-muted">Hours slept, labelled by wake-up day</p>
+          <SleepChart points={data.charts.sleep} />
+        </div>
+        <div className="rounded-3xl border border-line bg-surface p-6">
+          <h2 className="text-sm font-semibold">Calm · last 14 days</h2>
+          <p className="mt-1 mb-4 text-xs text-muted">Minutes of breathing and grounding</p>
+          <CalmChart points={data.charts.calm} />
+        </div>
       </section>
     </div>
   )

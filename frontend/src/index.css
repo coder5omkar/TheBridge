@@ -46,3 +46,27 @@
 .calm-pulse {
   animation: calm-pulse 3.2s ease-in-out infinite;
 }
+
+/* Floating gem reward */
+@keyframes gem-float {
+  0% {
+    opacity: 0;
+    transform: translateY(12px) scale(0.9);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  75% {
+    opacity: 1;
+    transform: translateY(-18px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-34px);
+  }
+}
+
+.gem-float {
+  animation: gem-float 1.9s ease-out forwards;
+}

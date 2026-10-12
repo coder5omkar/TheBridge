@@ -3,7 +3,12 @@ import AppShell from '../components/AppShell'
 import PlaceholderPage from '../components/PlaceholderPage'
 import ProtectedRoute from '../components/ProtectedRoute'
 import LoginPage from '../features/auth/LoginPage'
+import CalmPage from '../features/calm/CalmPage'
+import ExercisePlayerPage from '../features/calm/ExercisePlayerPage'
+import SosPage from '../features/calm/SosPage'
 import DashboardPage from '../features/dashboard/DashboardPage'
+import DiaryPage from '../features/diary/DiaryPage'
+import SleepPage from '../features/sleep/SleepPage'
 
 export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
@@ -16,39 +21,17 @@ export const router = createBrowserRouter([
     ),
     children: [
       { index: true, element: <DashboardPage /> },
-      {
-        path: 'diary',
-        element: (
-          <PlaceholderPage icon="✍️" title="Diary" phase={1}>
-            One entry per day: morning intention, mood, energy, tags and the evening
-            review that seals the day.
-          </PlaceholderPage>
-        ),
-      },
-      {
-        path: 'calm',
-        element: (
-          <PlaceholderPage icon="🧘" title="Calm" phase={1}>
-            Box breathing, 4-7-8, coherent breathing, grounding and body scans — with the
-            60-second SOS reset always one tap away.
-          </PlaceholderPage>
-        ),
-      },
+      { path: 'diary', element: <DiaryPage /> },
+      { path: 'calm', element: <CalmPage /> },
+      { path: 'calm/sos', element: <SosPage /> },
+      { path: 'calm/:slug', element: <ExercisePlayerPage /> },
+      { path: 'sleep', element: <SleepPage /> },
       {
         path: 'thoughts',
         element: (
           <PlaceholderPage icon="💭" title="Thoughts" phase={2}>
             A mental inbox: capture the thought, tag it, reframe it when you are ready,
             then release it.
-          </PlaceholderPage>
-        ),
-      },
-      {
-        path: 'sleep',
-        element: (
-          <PlaceholderPage icon="🌙" title="Sleep" phase={1}>
-            Bed and wake times, quality, and the graphs that show duration, consistency
-            and your sleep midpoint.
           </PlaceholderPage>
         ),
       },
