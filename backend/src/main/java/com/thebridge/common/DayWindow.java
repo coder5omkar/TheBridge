@@ -25,4 +25,15 @@ public record DayWindow(ZoneId zone, int dayStartHour) {
 		LocalDate date = zoned.toLocalDate();
 		return zoned.getHour() < dayStartHour ? date.minusDays(1) : date;
 	}
+
+	/**
+	 * Days stay editable until 12:00 PM the following day, then they freeze forever.
+	 */
+	public Instant freezeAt(LocalDate date) {
+		return date.plusDays(1).atTime(12, 0).atZone(zone).toInstant();
+	}
+
+	public boolean editable(LocalDate date) {
+		return !date.isAfter(today()) && Instant.now().isBefore(freezeAt(date));
+	}
 }

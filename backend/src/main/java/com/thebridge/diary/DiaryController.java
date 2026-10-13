@@ -1,8 +1,12 @@
 package com.thebridge.diary;
 
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,21 +30,41 @@ public class DiaryController {
 		this.diaryService = diaryService;
 	}
 
-	/** Today's entry in the user's own day boundaries — 204 when nothing written yet. */
 	@GetMapping("/today")
 	public ResponseEntity<View> today(@AuthenticationPrincipal User user) {
-		return diaryService.today(user)
-				.map(ResponseEntity::ok)
-				.orElseGet(() -> ResponseEntity.noContent().build());
+		return entryOrNoContent(diaryService.today(user));
+	}
+
+	@GetMapping("/{date}")
+	public ResponseEntity<View> byDate(@AuthenticationPrincipal User user,
+			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+		return entryOrNoContent(diaryService.entry(user, date));
 	}
 
 	@PutMapping("/today")
-	public Response save(@AuthenticationPrincipal User user, @Valid @RequestBody UpsertRequest request) {
-		return diaryService.save(user, request);
+	public Response saveToday(@AuthenticationPrincipal User user, @Valid @RequestBody UpsertRequest request) {
+		return diaryService.saveToday(user, request);
+	}
+
+	@PutMapping("/{date}")
+	public Response saveByDate(@AuthenticationPrincipal User user,
+			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
+			@Valid @RequestBody UpsertRequest request) {
+		return diaryService.save(user, date, request);
 	}
 
 	@PostMapping("/today/seal")
-	public Response seal(@AuthenticationPrincipal User user) {
-		return diaryService.seal(user);
+	public Response sealToday(@AuthenticationPrincipal User user) {
+		return diaryService.sealToday(user);
+	}
+
+	@PostMapping("/{date}/seal")
+	public Response sealByDate(@AuthenticationPrincipal User user,
+			@PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+		return diaryService.seal(user, date);
+	}
+
+	private ResponseEntity<View> entryOrNoContent(java.util.Optional<View> entry) {
+		return entry.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.noContent().build());
 	}
 }

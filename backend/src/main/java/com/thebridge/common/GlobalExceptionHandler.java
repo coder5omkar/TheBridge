@@ -39,6 +39,11 @@ public class GlobalExceptionHandler {
 		return problem(HttpStatus.CONFLICT, ex.getMessage());
 	}
 
+	@ExceptionHandler(DayFrozenException.class)
+	ProblemDetail handleDayFrozen(DayFrozenException ex) {
+		return problem(HttpStatus.CONFLICT, ex.getMessage());
+	}
+
 	private ProblemDetail problem(HttpStatus status, String detail) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
 		problem.setTitle(status.getReasonPhrase());

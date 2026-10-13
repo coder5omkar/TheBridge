@@ -25,6 +25,7 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'diary', element: <DiaryPage /> },
+      { path: 'diary/:date', element: <DiaryPage /> },
       { path: 'days', element: <DaysPage /> },
       { path: 'days/:date', element: <DayDetailPage /> },
       { path: 'calm', element: <CalmPage /> },

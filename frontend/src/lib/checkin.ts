@@ -25,3 +25,13 @@ export function answeredCount(entry: DiaryView | null | undefined): number {
 }
 
 export const TOTAL_QUESTIONS = 11
+
+/**
+ * Client-side guess of whether a day is still editable (until 12:00 PM the next
+ * day, browser-local time). The server is the authority; this only shapes UI.
+ */
+export function isDayEditableLocally(date: string): boolean {
+  const deadline = new Date(`${date}T12:00:00`)
+  deadline.setDate(deadline.getDate() + 1)
+  return Date.now() < deadline.getTime()
+}

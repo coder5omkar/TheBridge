@@ -31,10 +31,12 @@ public final class DayDtos {
 			long gemsEarned) {
 	}
 
-	/** One row of the Days list. */
+	/** One row of the Days list. Every day in the window appears, frozen or not. */
 	public record DaySummary(
 			LocalDate date,
 			boolean sealed,
+			boolean frozen,
+			boolean hasData,
 			Integer mood,
 			int calmMinutes,
 			Integer sleepMinutes,

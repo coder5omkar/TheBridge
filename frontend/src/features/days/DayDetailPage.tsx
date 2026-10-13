@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link, useParams } from 'react-router-dom'
 import { api } from '../../lib/api'
-import { moodEmoji } from '../../lib/checkin'
+import { isDayEditableLocally, moodEmoji } from '../../lib/checkin'
 import { formatMinutes, formatTime } from '../../lib/format'
 import type { DayRecord, DiaryView } from '../../lib/types'
 
@@ -47,12 +47,13 @@ export default function DayDetailPage() {
 
   const record = query.data
   const entry = record.entry
+  const sealed = entry?.sealedAt != null
+  const editable = entry ? entry.editable : isDayEditableLocally(record.date)
   const dateLabel = new Date(`${record.date}T00:00:00`).toLocaleDateString(undefined, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   })
-  const sealed = entry?.sealedAt != null
   const empty =
     !entry &&
     !record.sleep &&
@@ -69,14 +70,30 @@ export default function DayDetailPage() {
 
       <header className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-2xl font-semibold tracking-tight">{dateLabel}</h1>
-        {sealed ? (
-          <span className="rounded-full bg-[#1b2e22] px-3 py-1 text-xs font-medium text-ink-soft">
-            📔 Sealed {formatTime(entry!.sealedAt!)}
-          </span>
-        ) : (
-          <span className="rounded-full bg-paper px-3 py-1 text-xs text-muted">open day</span>
-        )}
+        <span className="flex flex-wrap gap-2">
+          {sealed && (
+            <span className="rounded-full bg-[#1b2e22] px-3 py-1 text-xs font-medium text-ink-soft">
+              📔 Sealed {formatTime(entry!.sealedAt!)}
+            </span>
+          )}
+          {editable ? (
+            <span className="rounded-full bg-sage-mist px-3 py-1 text-xs font-medium text-sage-deep">
+              ✍️ editable till 12 PM
+            </span>
+          ) : (
+            <span className="rounded-full bg-paper px-3 py-1 text-xs text-muted">🔒 frozen</span>
+          )}
+        </span>
       </header>
+
+      {editable && (
+        <Link
+          to={`/diary/${record.date}`}
+          className="rounded-full bg-sage px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-sage-deep"
+        >
+          ✍️ {entry ? 'Edit this day' : 'Add the check-in'} · saves till 12 PM the next day
+        </Link>
+      )}
 
       {empty && (
         <div className="rounded-3xl border border-line bg-surface p-8 text-center text-sm text-muted">
@@ -212,7 +229,7 @@ export default function DayDetailPage() {
 
       {record.gemsEarned !== 0 && (
         <p className="text-center text-xs text-muted">
-          💎 {record.gemsEarned} gems earned this day {sealed ? '· sealed, read-only' : ''}
+          💎 {record.gemsEarned} gems earned this day
         </p>
       )}
     </div>

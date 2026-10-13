@@ -18,14 +18,16 @@ public final class DiaryDtos {
 	public record View(Long id, LocalDate date, Integer mood, Integer energy,
 			String morningIntent, String eveningReview, String body, List<String> tags,
 			Integer waterCups, String highlights, String drained, String gratitude, Boolean moved,
-			Instant sealedAt, Instant updatedAt) {
+			Instant sealedAt, boolean editable, Instant freezeAt, Instant updatedAt) {
 
-		public static View from(DiaryEntry entry) {
+		public static View from(DiaryEntry entry, com.thebridge.common.DayWindow window) {
 			return new View(entry.getId(), entry.getEntryDate(), entry.getMood(), entry.getEnergy(),
 					entry.getMorningIntent(), entry.getEveningReview(), entry.getBody(),
 					entry.getTags() == null ? List.of() : Arrays.asList(entry.getTags()),
 					entry.getWaterCups(), entry.getHighlights(), entry.getDrained(), entry.getGratitude(),
-					entry.getMoved(), entry.getSealedAt(), entry.getUpdatedAt());
+					entry.getMoved(), entry.getSealedAt(),
+					window.editable(entry.getEntryDate()), window.freezeAt(entry.getEntryDate()),
+					entry.getUpdatedAt());
 		}
 	}
 

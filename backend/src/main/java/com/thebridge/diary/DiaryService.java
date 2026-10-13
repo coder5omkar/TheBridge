@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thebridge.common.DayFrozenException;
 import com.thebridge.common.DaySealedException;
 import com.thebridge.common.DayWindow;
 import com.thebridge.diary.DiaryDtos.Response;
@@ -28,26 +29,41 @@ public class DiaryService {
 	}
 
 	@Transactional(readOnly = true)
-	public Optional<View> today(User user) {
+	public Optional<View> entry(User user, LocalDate date) {
 		DayWindow window = window(user);
-		return repository.findByUserIdAndEntryDate(user.getId(), window.today()).map(View::from);
+		return repository.findByUserIdAndEntryDate(user.getId(), date).map(entry -> View.from(entry, window));
+	}
+
+	@Transactional(readOnly = true)
+	public Optional<View> today(User user) {
+		return entry(user, window(user).today());
 	}
 
 	@Transactional
-	public Response save(User user, UpsertRequest request) {
-		DayWindow window = window(user);
-		LocalDate today = window.today();
-		Instant since = window.startOf(today);
+	public Response saveToday(User user, UpsertRequest request) {
+		return save(user, window(user).today(), request);
+	}
 
-		DiaryEntry entry = repository.findByUserIdAndEntryDate(user.getId(), today).orElse(null);
-		if (entry != null && entry.getSealedAt() != null) {
-			throw new DaySealedException();
+	/**
+	 * A day can be written until 12:00 PM the next day — then it is frozen for good.
+	 */
+	@Transactional
+	public Response save(User user, LocalDate date, UpsertRequest request) {
+		DayWindow window = window(user);
+		if (date.isAfter(window.today())) {
+			throw new IllegalArgumentException("You cannot write a future day.");
 		}
+		if (!window.editable(date)) {
+			throw new DayFrozenException();
+		}
+		Instant since = window.startOf(date);
+
+		DiaryEntry entry = repository.findByUserIdAndEntryDate(user.getId(), date).orElse(null);
 		boolean created = entry == null;
 		if (created) {
 			entry = new DiaryEntry();
 			entry.setUserId(user.getId());
-			entry.setEntryDate(today);
+			entry.setEntryDate(date);
 		}
 
 		entry.setMood(request.mood());
@@ -72,20 +88,30 @@ public class DiaryService {
 			gems += gemService.awardOnce(user.getId(), 3, "evening_review", "evening_review", entry.getId(), since);
 		}
 
-		return new Response(View.from(entry), gemService.rewards(user.getId(), since, gems));
+		return new Response(View.from(entry, window), gemService.rewards(user.getId(), since, gems));
+	}
+
+	@Transactional
+	public Response sealToday(User user) {
+		return seal(user, window(user).today());
 	}
 
 	/**
-	 * The nightly ritual: seal today as a kept, read-only record.
-	 * Requires the evening review — a day isn't done until it's reflected on.
+	 * The nightly ritual: mark a day complete (+5 💎). Sealing does not lock the
+	 * day — the freeze at noon the next day does.
 	 */
 	@Transactional
-	public Response seal(User user) {
+	public Response seal(User user, LocalDate date) {
 		DayWindow window = window(user);
-		LocalDate today = window.today();
-		Instant since = window.startOf(today);
+		if (date.isAfter(window.today())) {
+			throw new IllegalArgumentException("You cannot seal a future day.");
+		}
+		if (!window.editable(date)) {
+			throw new DayFrozenException();
+		}
+		Instant since = window.startOf(date);
 
-		DiaryEntry entry = repository.findByUserIdAndEntryDate(user.getId(), today)
+		DiaryEntry entry = repository.findByUserIdAndEntryDate(user.getId(), date)
 				.orElseThrow(() -> new IllegalArgumentException(
 						"Nothing to seal yet — answer a few questions first."));
 		if (entry.getSealedAt() != null) {
@@ -100,8 +126,8 @@ public class DiaryService {
 		entry.setUpdatedAt(Instant.now());
 		repository.save(entry);
 
-		int gems = gemService.awardOnce(user.getId(), 5, "day_sealed", "day_sealed", today.toEpochDay(), since);
-		return new Response(View.from(entry), gemService.rewards(user.getId(), since, gems));
+		int gems = gemService.awardOnce(user.getId(), 5, "day_sealed", "day_sealed", date.toEpochDay(), since);
+		return new Response(View.from(entry, window), gemService.rewards(user.getId(), since, gems));
 	}
 
 	private DayWindow window(User user) {

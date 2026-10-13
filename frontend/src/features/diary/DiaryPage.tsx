@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Link } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { api } from '../../lib/api'
 import GemBurst from '../../components/GemBurst'
-import { MOOD_EMOJIS, TOTAL_QUESTIONS } from '../../lib/checkin'
+import { isDayEditableLocally, MOOD_EMOJIS, TOTAL_QUESTIONS } from '../../lib/checkin'
 import { formatTime } from '../../lib/format'
 import type { DiaryResponse, DiaryView } from '../../lib/types'
 
@@ -130,7 +130,7 @@ function SectionHeader({
 const inputClass =
   'w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm outline-none transition-colors focus:border-sage'
 
-const ANSWER_ROWS: { label: string; icon: string; key: keyof FormState }[] = [
+const ANSWER_ROWS: { label: string; icon: string; key: keyof DiaryView }[] = [
   { label: 'Intention', icon: '🌅', key: 'morningIntent' },
   { label: 'Best moment', icon: '🏆', key: 'highlights' },
   { label: 'Drained by', icon: '😮‍💨', key: 'drained' },
@@ -140,6 +140,7 @@ const ANSWER_ROWS: { label: string; icon: string; key: keyof FormState }[] = [
 ]
 
 export default function DiaryPage() {
+  const { date: dateParam } = useParams<{ date: string }>()
   const queryClient = useQueryClient()
   const [form, setForm] = useState<FormState | null>(null)
   const [burst, setBurst] = useState<number | null>(null)
@@ -147,9 +148,12 @@ export default function DiaryPage() {
   const [eveningOpen, setEveningOpen] = useState(() => new Date().getHours() >= 17)
   const dirtyRef = useRef(false)
 
+  const apiPath = dateParam ? `/diary/${dateParam}` : '/diary/today'
+  const queryKey = dateParam ? ['diary', dateParam] : ['diary-today']
+
   const query = useQuery({
-    queryKey: ['diary-today'],
-    queryFn: () => api<DiaryView | undefined>('/diary/today'),
+    queryKey,
+    queryFn: () => api<DiaryView | undefined>(apiPath),
   })
 
   useEffect(() => {
@@ -157,9 +161,18 @@ export default function DiaryPage() {
     setForm(query.data ? formFrom(query.data) : emptyForm())
   }, [form, query.isSuccess, query.data])
 
+  function invalidateAll() {
+    queryClient.invalidateQueries({ queryKey: ['dashboard-today'] })
+    queryClient.invalidateQueries({ queryKey: ['insights-weekly'] })
+    queryClient.invalidateQueries({ queryKey: ['days-calendar'] })
+    if (dateParam) {
+      queryClient.invalidateQueries({ queryKey: ['day', dateParam] })
+    }
+  }
+
   const mutation = useMutation({
     mutationFn: (state: FormState) =>
-      api<DiaryResponse>('/diary/today', {
+      api<DiaryResponse>(apiPath, {
         method: 'PUT',
         body: JSON.stringify({
           mood: state.mood,
@@ -176,10 +189,8 @@ export default function DiaryPage() {
         }),
       }),
     onSuccess: (response) => {
-      queryClient.setQueryData(['diary-today'], response.entry)
-      queryClient.invalidateQueries({ queryKey: ['dashboard-today'] })
-      queryClient.invalidateQueries({ queryKey: ['insights-weekly'] })
-      queryClient.invalidateQueries({ queryKey: ['days-calendar'] })
+      queryClient.setQueryData(queryKey, response.entry)
+      invalidateAll()
       setSavedAt(new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }))
       if (response.rewards.gemsAwarded > 0) {
         setBurst(response.rewards.gemsAwarded)
@@ -188,19 +199,17 @@ export default function DiaryPage() {
   })
 
   const seal = useMutation({
-    mutationFn: () => api<DiaryResponse>('/diary/today/seal', { method: 'POST' }),
+    mutationFn: () => api<DiaryResponse>(`${apiPath}/seal`, { method: 'POST' }),
     onSuccess: (response) => {
-      queryClient.setQueryData(['diary-today'], response.entry)
-      queryClient.invalidateQueries({ queryKey: ['dashboard-today'] })
-      queryClient.invalidateQueries({ queryKey: ['days-calendar'] })
-      queryClient.invalidateQueries({ queryKey: ['insights-weekly'] })
+      queryClient.setQueryData(queryKey, response.entry)
+      invalidateAll()
       if (response.rewards.gemsAwarded > 0) {
         setBurst(response.rewards.gemsAwarded)
       }
     },
   })
 
-  // Autosave: every change saves itself ~1s later. No Save button needed.
+  // Autosave: every change saves itself ~1s later.
   useEffect(() => {
     if (!form || !dirtyRef.current) return
     const timer = setTimeout(() => mutation.mutate(form), 900)
@@ -208,10 +217,21 @@ export default function DiaryPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form])
 
+  const entry = query.data ?? null
+  const frozen = entry ? !entry.editable : dateParam ? !isDayEditableLocally(dateParam) : false
+
+  const dateLabel = dateParam
+    ? new Date(`${dateParam}T00:00:00`).toLocaleDateString(undefined, {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+      })
+    : null
+
   if (query.isError) {
     return (
       <div className="max-w-xl rounded-3xl border border-line bg-surface p-8">
-        <h1 className="text-xl font-semibold">Could not open today's page</h1>
+        <h1 className="text-xl font-semibold">Could not open this page</h1>
         <p className="mt-2 text-sm text-ink-soft">{query.error?.message}</p>
         <button
           type="button"
@@ -224,20 +244,49 @@ export default function DiaryPage() {
     )
   }
 
-  // Sealed: the day is a kept, read-only record.
-  if (query.data?.sealedAt) {
-    const entry = query.data
+  // Frozen: read-only forever.
+  if (frozen) {
+    if (!entry) {
+      return (
+        <div className="flex max-w-3xl flex-col gap-5">
+          <header className="flex items-center gap-3">
+            {dateParam && (
+              <Link to={`/days/${dateParam}`} className="text-xs text-muted hover:text-ink-soft">
+                ←
+              </Link>
+            )}
+            <h1 className="text-2xl font-semibold tracking-tight">{dateLabel ?? 'Daily check-in'}</h1>
+            <span className="rounded-full bg-paper px-3 py-1 text-xs text-muted">🔒 frozen</span>
+          </header>
+          <div className="rounded-3xl border border-line bg-surface p-8 text-center text-sm text-muted">
+            This day froze at 12 PM without a check-in.
+          </div>
+        </div>
+      )
+    }
     return (
       <div className="flex max-w-3xl flex-col gap-5">
         {burst !== null && <GemBurst amount={burst} onDone={() => setBurst(null)} />}
 
         <header className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Daily check-in</h1>
-            <p className="mt-1 text-sm text-muted">This day stays exactly as you kept it.</p>
+          <div className="flex items-center gap-3">
+            {dateParam && (
+              <Link to={`/days/${dateParam}`} className="text-xs text-muted hover:text-ink-soft">
+                ←
+              </Link>
+            )}
+            <div>
+              <h1 className="text-2xl font-semibold tracking-tight">{dateLabel ?? 'Daily check-in'}</h1>
+              <p className="mt-1 text-sm text-muted">Frozen at 12 PM — read-only, kept as it was.</p>
+            </div>
           </div>
-          <span className="rounded-full bg-[#1b2e22] px-3 py-1 text-xs font-medium text-ink-soft">
-            📔 Sealed {formatTime(entry.sealedAt!)}
+          <span className="flex gap-2">
+            {entry.sealedAt && (
+              <span className="rounded-full bg-[#1b2e22] px-3 py-1 text-xs font-medium text-ink-soft">
+                📔 Sealed {formatTime(entry.sealedAt)}
+              </span>
+            )}
+            <span className="rounded-full bg-paper px-3 py-1 text-xs text-muted">🔒 frozen</span>
           </span>
         </header>
 
@@ -246,9 +295,7 @@ export default function DiaryPage() {
             <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">
               {MOOD_EMOJIS[(entry.mood ?? 1) - 1]} mood {entry.mood ?? '—'}/5
             </span>
-            <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">
-              ⚡ {entry.energy ?? '—'}/5
-            </span>
+            <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">⚡ {entry.energy ?? '—'}/5</span>
             <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">💧 {entry.waterCups ?? 0}</span>
             {entry.moved != null && (
               <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">
@@ -264,14 +311,12 @@ export default function DiaryPage() {
         </section>
 
         <section className="overflow-hidden rounded-3xl border border-line bg-surface">
-          {ANSWER_ROWS.filter((row) => entry[row.key as keyof DiaryView]).map((row) => (
+          {ANSWER_ROWS.filter((row) => entry[row.key]).map((row) => (
             <div key={row.key} className="border-b border-line/60 px-5 py-4 last:border-0">
               <p className="text-[11px] font-bold uppercase tracking-widest text-muted">
                 {row.icon} {row.label}
               </p>
-              <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">
-                {entry[row.key as keyof DiaryView] as string}
-              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">{entry[row.key] as string}</p>
             </div>
           ))}
         </section>
@@ -287,7 +332,7 @@ export default function DiaryPage() {
   }
 
   if (!form) {
-    return <p className="text-sm text-muted">Opening today's page…</p>
+    return <p className="text-sm text-muted">Opening the page…</p>
   }
 
   const update = (patch: Partial<FormState>) => {
@@ -296,15 +341,27 @@ export default function DiaryPage() {
   }
 
   const answered = answeredCount(form)
+  const sealed = entry?.sealedAt != null
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
       {burst !== null && <GemBurst amount={burst} onDone={() => setBurst(null)} />}
 
       <header className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Daily check-in</h1>
-          <p className="mt-1 text-sm text-muted">Reflection time — everything saves itself as you go.</p>
+        <div className="flex items-center gap-3">
+          {dateParam && (
+            <Link to={`/days/${dateParam}`} className="text-xs text-muted hover:text-ink-soft">
+              ←
+            </Link>
+          )}
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">{dateLabel ?? 'Daily check-in'}</h1>
+            <p className="mt-1 text-sm text-muted">
+              {sealed
+                ? '📔 Sealed — still editable until 12 PM the next day.'
+                : 'Everything saves itself as you go — editable until 12 PM the next day.'}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-3">
           <span className="rounded-full bg-sage-mist px-3 py-1 text-xs font-medium text-sage-deep">
@@ -503,23 +560,32 @@ export default function DiaryPage() {
       </section>
 
       {/* The seal */}
-      <section className="rounded-3xl border border-line bg-surface p-5">
-        {form.eveningReview.trim() ? (
-          <button
-            type="button"
-            onClick={() => seal.mutate()}
-            disabled={seal.isPending}
-            className="w-full rounded-full bg-gradient-to-br from-[#4e54f5] to-[#8b5cf6] py-3 text-sm font-semibold text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01] disabled:opacity-50"
-          >
-            {seal.isPending ? 'Sealing…' : 'Seal this day 📔 · +5 💎'}
-          </button>
-        ) : (
-          <p className="py-1 text-center text-xs text-muted">
-            Write your evening review to seal the day — it becomes a kept, read-only record · +5 💎
-          </p>
-        )}
-        {seal.isError && <p className="mt-3 text-xs text-rose-300">{seal.error.message}</p>}
-      </section>
+      {!sealed && (
+        <section className="rounded-3xl border border-line bg-surface p-5">
+          {form.eveningReview.trim() ? (
+            <button
+              type="button"
+              onClick={() => seal.mutate()}
+              disabled={seal.isPending}
+              className="w-full rounded-full bg-gradient-to-br from-[#4e54f5] to-[#8b5cf6] py-3 text-sm font-semibold text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01] disabled:opacity-50"
+            >
+              {seal.isPending ? 'Sealing…' : 'Seal this day 📔 · +5 💎'}
+            </button>
+          ) : (
+            <p className="py-1 text-center text-xs text-muted">
+              Write your evening review to seal the day — a completion mark · +5 💎
+            </p>
+          )}
+          {seal.isError && <p className="mt-3 text-xs text-rose-300">{seal.error.message}</p>}
+        </section>
+      )}
+
+      {sealed && (
+        <p className="text-center text-xs text-muted">
+          📔 Sealed {entry?.sealedAt ? formatTime(entry.sealedAt) : ''} — still editable until 12 PM the
+          next day, then it freezes.
+        </p>
+      )}
 
       {mutation.isError && (
         <p className="text-xs text-rose-300">Could not save: {mutation.error.message}</p>

@@ -67,7 +67,7 @@ public class DayService {
 		Instant to = window.startOf(date.plusDays(1));
 
 		DiaryDtos.View entry = diaryEntryRepository.findByUserIdAndEntryDate(user.getId(), date)
-				.map(DiaryDtos.View::from)
+				.map(item -> DiaryDtos.View.from(item, window))
 				.orElse(null);
 
 		SleepDtos.View sleep = sleepLogRepository.findByUserIdAndSleepDate(user.getId(), date)
@@ -154,9 +154,6 @@ public class DayService {
 			long gems = gemsByDay.getOrDefault(date, 0L);
 
 			boolean hasData = entry != null || sleep != null || calm[1] > 0 || mealCount > 0 || gems != 0;
-			if (!hasData) {
-				continue;
-			}
 
 			Integer sleepMinutes = null;
 			if (sleep != null && sleep.getBedTime() != null && sleep.getWakeTime() != null) {
@@ -167,6 +164,8 @@ public class DayService {
 			result.add(new DaySummary(
 					date,
 					entry != null && entry.getSealedAt() != null,
+					!window.editable(date),
+					hasData,
 					entry == null ? null : entry.getMood(),
 					calm[0],
 					sleepMinutes,

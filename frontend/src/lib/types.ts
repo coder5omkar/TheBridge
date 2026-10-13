@@ -54,6 +54,8 @@ export type DiaryView = {
   gratitude: string | null
   moved: boolean | null
   sealedAt: string | null
+  editable: boolean
+  freezeAt: string
   updatedAt: string
 }
 
@@ -143,6 +145,8 @@ export type WeeklyInsights = {
 export type DaySummary = {
   date: string
   sealed: boolean
+  frozen: boolean
+  hasData: boolean
   mood: number | null
   calmMinutes: number
   sleepMinutes: number | null
