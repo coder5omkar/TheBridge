@@ -19,6 +19,9 @@ function buildPhases(pattern: number[]): Phase[] {
   return phases
 }
 
+const RING_RADIUS = 136
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
+
 type Props = {
   exercise: ExerciseView
   kind: 'regular' | 'sos'
@@ -144,41 +147,54 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
     }
 
     return (
-      <div className="flex flex-col items-center gap-8 py-6">
+      <div className="relative flex flex-col items-center gap-8 py-6">
         {burst !== null && <GemBurst amount={burst} onDone={() => setBurst(null)} />}
 
-        <header className="text-center">
+        <header className="enter-up text-center">
           <h1 className="text-xl font-semibold tracking-tight">{exercise.name}</h1>
           <p className="mt-1 max-w-sm text-xs text-muted">{exercise.description}</p>
         </header>
 
         {stepIndex === -1 ? (
           <>
-            <div className="flex h-40 w-40 items-center justify-center rounded-full bg-sage-mist text-5xl">
+            <div className="enter-up float-soft flex h-40 w-40 items-center justify-center rounded-full bg-sage-mist text-5xl">
               🧎
             </div>
             <button
               type="button"
               onClick={startGrounding}
-              className="rounded-full bg-sage px-7 py-3 text-sm font-medium text-white transition-colors hover:bg-sage-deep"
+              className="enter-up rounded-full bg-sage px-7 py-3 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
+              style={{ animationDelay: '120ms' }}
             >
               Begin · {steps.length} steps
             </button>
           </>
         ) : (
           <>
-            <p className="text-[11px] font-bold uppercase tracking-widest text-muted">
-              Step {stepIndex + 1} of {steps.length}
-            </p>
-            <div className="flex min-h-36 w-full max-w-md items-center justify-center rounded-3xl border border-line bg-surface px-8 py-10 text-center">
+            <div className="flex items-center gap-1.5">
+              {steps.map((_, index) => (
+                <span
+                  key={index}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    index === stepIndex ? 'w-6 bg-sage' : index < stepIndex ? 'w-1.5 bg-sage/60' : 'w-1.5 bg-line'
+                  }`}
+                />
+              ))}
+            </div>
+
+            <div
+              key={stepIndex}
+              className="enter-up flex min-h-36 w-full max-w-md items-center justify-center rounded-3xl border border-line bg-surface px-8 py-10 text-center shadow-lg shadow-black/20"
+            >
               <p className="text-xl font-medium leading-snug">{steps[stepIndex]}</p>
             </div>
+
             <div className="flex gap-3">
               {stepIndex > 0 && (
                 <button
                   type="button"
                   onClick={() => setStepIndex(stepIndex - 1)}
-                  className="rounded-full border border-line bg-paper px-5 py-2.5 text-sm text-ink-soft transition-colors hover:border-sage"
+                  className="rounded-full border border-line bg-paper px-5 py-2.5 text-sm text-ink-soft transition-all hover:scale-105 hover:border-sage"
                 >
                   Back
                 </button>
@@ -187,7 +203,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 <button
                   type="button"
                   onClick={() => setStepIndex(stepIndex + 1)}
-                  className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep"
+                  className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
                 >
                   Next
                 </button>
@@ -195,7 +211,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 <button
                   type="button"
                   onClick={finishGrounding}
-                  className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep"
+                  className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
                 >
                   Finish ✓
                 </button>
@@ -225,15 +241,20 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
     submit(false, Math.max(0, Math.floor(clock.elapsed)))
   }
 
+  const sessionProgress = totalSeconds > 0 ? Math.min(1, clock.elapsed / totalSeconds) : 0
   const remaining = totalSeconds - clock.elapsed
   const phase = phases[Math.min(clock.phaseIdx, phases.length - 1)]
   const scale = running || finished ? phase.scale : 0.55
+  const transitionStyle = {
+    transform: `scale(${scale})`,
+    transitionDuration: `${phase.seconds}s`,
+  }
 
   return (
-    <div className="flex flex-col items-center gap-10 py-6">
+    <div className="relative flex flex-col items-center gap-10 py-6">
       {burst !== null && <GemBurst amount={burst} onDone={() => setBurst(null)} />}
 
-      <header className="text-center">
+      <header className="enter-up text-center">
         <h1 className="text-xl font-semibold tracking-tight">{exercise.name}</h1>
         <p className="mt-1 text-xs text-muted">
           {kind === 'sos' ? 'SOS reset · ' : ''}
@@ -247,18 +268,89 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
         </p>
       </header>
 
-      <div className="relative flex h-64 w-64 items-center justify-center">
-        <div className="absolute inset-0 rounded-full bg-sage-mist" />
+      <div className="relative flex h-72 w-72 items-center justify-center">
+        {/* ambient light */}
+        <span
+          className="float-soft pointer-events-none absolute -left-10 -top-6 h-36 w-36 rounded-full bg-sage/10 blur-3xl"
+          style={{ animationDuration: '9s' }}
+        />
+        <span
+          className="float-soft pointer-events-none absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-[#8b5cf6]/10 blur-3xl"
+          style={{ animationDuration: '12s', animationDelay: '-4s' }}
+        />
+
+        {/* session progress ring */}
+        <svg className="absolute inset-0 -rotate-90" viewBox="0 0 288 288" aria-hidden>
+          <circle
+            cx="144"
+            cy="144"
+            r={RING_RADIUS}
+            fill="none"
+            stroke="rgba(255,255,255,0.08)"
+            strokeWidth="3"
+          />
+          <circle
+            cx="144"
+            cy="144"
+            r={RING_RADIUS}
+            fill="none"
+            stroke="#8b7cff"
+            strokeWidth="3"
+            strokeLinecap="round"
+            strokeDasharray={RING_CIRCUMFERENCE}
+            strokeDashoffset={RING_CIRCUMFERENCE * (1 - sessionProgress)}
+            style={{ transition: 'stroke-dashoffset 0.3s linear' }}
+          />
+        </svg>
+
+        {/* breath comet */}
         <div
-          className="relative flex h-64 w-64 items-center justify-center rounded-full bg-gradient-to-br from-sage to-[#8b5cf6] shadow-xl shadow-sage/30 transition-transform ease-in-out"
-          style={{ transform: `scale(${scale})`, transitionDuration: `${phase.seconds}s` }}
+          className="absolute inset-0"
+          style={{
+            transform: `rotate(${sessionProgress * 360}deg)`,
+            transition: 'transform 0.3s linear',
+          }}
+          aria-hidden
         >
-          <span className="text-sm font-medium text-white">{running ? phase.label : ''}</span>
+          <span className="absolute left-1/2 top-2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)]" />
         </div>
+
+        {/* breathing glow */}
+        <div
+          className="absolute h-64 w-64 rounded-full bg-sage/30 blur-2xl transition-transform ease-in-out"
+          style={transitionStyle}
+        />
+
+        {/* the breathing circle */}
+        <div
+          className="relative flex h-64 w-64 items-center justify-center rounded-full bg-gradient-to-br from-[#5b55f6] to-[#8b5cf6] shadow-xl shadow-sage/30 transition-transform ease-in-out"
+          style={transitionStyle}
+        >
+          <div className="flex flex-col items-center gap-0.5">
+            <span
+              key={running ? clock.phaseIdx : 'idle'}
+              className={`text-sm font-medium text-white ${running ? 'phase-pop' : ''}`}
+            >
+              {running ? phase.label : ''}
+            </span>
+            {running && (
+              <span className="text-2xl font-semibold tabular-nums text-white/90">
+                {Math.max(1, Math.ceil(clock.phaseLeft))}
+              </span>
+            )}
+          </div>
+        </div>
+
+        {finished && (
+          <div className="pop-in pointer-events-none absolute -inset-4 z-10 flex flex-col items-center justify-center gap-2 rounded-[2rem] bg-paper/70 backdrop-blur-sm">
+            <span className="text-4xl">✨</span>
+            <p className="text-sm font-medium text-ink">Session complete</p>
+          </div>
+        )}
       </div>
 
       {duration == null && (
-        <div className="flex flex-col items-center gap-3">
+        <div className="enter-up flex flex-col items-center gap-3" style={{ animationDelay: '100ms' }}>
           <p className="max-w-sm text-center text-xs text-muted">{exercise.description}</p>
           <div className="flex gap-2">
             {exercise.durationOptions.map((minutes) => (
@@ -266,7 +358,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 key={minutes}
                 type="button"
                 onClick={() => start(minutes)}
-                className="rounded-full bg-sage px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep"
+                className="rounded-full bg-sage px-6 py-2.5 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
               >
                 {minutes} min
               </button>

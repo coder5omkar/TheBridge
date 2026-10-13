@@ -23,7 +23,7 @@ export default function CalmPage() {
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
-      <header>
+      <header className="enter-up">
         <h1 className="text-2xl font-semibold tracking-tight">Calm</h1>
         <p className="mt-1 text-sm text-muted">
           Practice earns 1 💎 per minute, and the first session of the day +2 💎.
@@ -32,22 +32,27 @@ export default function CalmPage() {
 
       <Link
         to="/calm/sos"
-        className="flex items-center gap-4 rounded-3xl bg-gradient-to-br from-[#4e54f5] to-[#8b5cf6] p-6 text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01]"
+        className="sos-gradient enter-up group flex items-center gap-4 rounded-3xl bg-gradient-to-br from-[#4e54f5] via-[#6d5af7] to-[#8b5cf6] p-6 text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01]"
+        style={{ animationDelay: '60ms' }}
       >
-        <span className="text-3xl">🆘</span>
+        <span className="float-soft text-3xl" aria-hidden>
+          🆘
+        </span>
         <span>
           <span className="block text-base font-semibold">Calm me now</span>
           <span className="block text-xs text-white/80">
             60-second physiological sigh — the fastest way back down
           </span>
         </span>
-        <span className="ml-auto text-2xl">→</span>
+        <span className="ml-auto translate-x-0 text-2xl transition-transform duration-300 group-hover:translate-x-1.5">
+          →
+        </span>
       </Link>
 
       <section>
         <h2 className="text-xs font-bold uppercase tracking-wider">Breathing & grounding</h2>
         <div className="mt-3 flex flex-col gap-3">
-          {playable.map((exercise) => {
+          {playable.map((exercise, index) => {
             const steps =
               exercise.type === 'grounding' &&
               exercise.pattern &&
@@ -59,9 +64,13 @@ export default function CalmPage() {
               <Link
                 key={exercise.id}
                 to={`/calm/${exercise.slug}`}
-                className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 transition-colors hover:border-sage"
+                className="enter-up group flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-sage/60 hover:shadow-lg hover:shadow-sage/10"
+                style={{ animationDelay: `${120 + index * 70}ms` }}
               >
-                <span className="text-2xl" aria-hidden>
+                <span
+                  className="text-2xl transition-transform duration-300 group-hover:scale-110"
+                  aria-hidden
+                >
                   {exercise.sos ? '🆘' : exercise.type === 'grounding' ? '🧎' : '🌬️'}
                 </span>
                 <span className="min-w-0">
@@ -75,8 +84,11 @@ export default function CalmPage() {
                   </span>
                   <span className="block truncate text-xs text-muted">{exercise.description}</span>
                 </span>
-                <span className="ml-auto shrink-0 text-xs text-muted">
+                <span className="ml-auto flex shrink-0 items-center gap-2 text-xs text-muted">
                   {steps ? `${steps} steps` : `${exercise.durationOptions.join(' / ')} min`}
+                  <span className="opacity-0 transition-all duration-300 group-hover:translate-x-0.5 group-hover:opacity-100">
+                    →
+                  </span>
                 </span>
               </Link>
             )
