@@ -69,8 +69,9 @@ login screen. The first account becomes the only account — registration closes
 
 ## Structure
 
-- **Today** — the cockpit: quick actions (sleep taps, 💧 water, thought capture, 60-second reset), rhythm habits, weekly insights and charts
-- **Diary** — the daily check-in: 11 questions staged Morning / During the day / Evening, autosaved as you go
+- **Today** — the cockpit: quick actions (sleep taps, 💧 water, 60-second reset), weekly insights and charts
+- **Diary** — the daily check-in: 11 questions staged Morning / Day / Evening, autosaved; seal the day (+5 💎) to keep it read-only
+- **Days** — every day you've kept: browse recent days, reopen any date's full record (check-in, sleep, calm sessions, meals, weight, gems)
 - **Calm** — breathing plus a 5-4-3-2-1 grounding step-through, with the 60-second SOS reset
 - **Health** — weight (+BMI via height) and food / eating habits
 
@@ -82,14 +83,14 @@ GET  /api/v1/auth/me           → current user (includes heightCm)
 GET  /api/v1/dashboard/today   → checklist state, gems, streak, 14-day sleep & calm charts
 GET  /api/v1/insights/weekly   → rhythm consistency, sleep average, calm minutes, mood, habit spotlight
 GET  /api/v1/diary/today       → today's entry (204 when empty)   PUT to upsert (+2 💎 first save, +3 💎 evening review)
+POST /api/v1/diary/today/seal  → seal the day: +5 💎, requires evening review, day becomes read-only (409 after)
+GET  /api/v1/days/calendar     → recent days with sealed state, mood, calm, sleep, meals, gems
+GET  /api/v1/days/{date}       → the full record of one day (check-in, sleep, sessions, meals, weights, gems)
 GET  /api/v1/calm/exercises    → seeded catalog with breathing patterns
 POST /api/v1/calm/sessions     → record practice (1 💎/min + 2 💎 first of day), kind=regular|sos
 GET  /api/v1/sleep/latest      → most recent night
 POST /api/v1/sleep/bedtime     → "going to bed now"
 POST /api/v1/sleep/wake        → "I'm awake" (+1 💎)
-GET  /api/v1/thoughts          → open thoughts (mental inbox)
-POST /api/v1/thoughts          → capture (worry | idea | gratitude | task)
-PATCH /api/v1/thoughts/{id}    → reframe and/or release (+2 💎 once)
 GET  /api/v1/health/summary    → weight trend, BMI, meals today + week stats
 POST /api/v1/health/weight     → weigh-in (+3 💎 first of the week)
 POST /api/v1/health/meals      → log a meal (type, description, home-cooked)
@@ -108,9 +109,8 @@ Everything except `/api/v1/auth/**`, `/error` and `/actuator/health` requires
 
 - 1 gem per completed practice minute (min 1), +2 for the first session of the day
 - Diary entry +2 (once), evening review +3 (once), sleep wake +1 (once)
-- Thought released (reframed and let go) +2 (once per thought)
 - First weigh-in of the week +3
-- Habit checked off +1 (once per habit per day; undo/redo never double-earns)
+- Sealing the day +5 (once per day — requires the evening review)
 - Soft daily cap of 25 gems; balance is always `SUM(gem_ledger.delta)`
 - SOS is always free and always earns like any other session
 
@@ -123,3 +123,7 @@ schema truth (`ddl-auto: validate` guards drift):
 - `V2__seed_exercises.sql` — the calm exercise catalog
 - `V3__align_smallint_columns.sql` — integer alignment for Hibernate validation
 - `V4__sleep_flexible_times.sql` — bedtime and wake can be logged independently
+- `V5__user_height.sql` — height on the profile
+- `V6__habits.sql` — habits (later superseded and removed by V8)
+- `V7__diary_questionnaire.sql` — the 11-question check-in columns
+- `V8__saved_days.sql` — day sealing (`sealed_at`); drops habits + thoughts

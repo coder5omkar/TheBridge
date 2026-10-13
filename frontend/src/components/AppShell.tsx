@@ -6,6 +6,7 @@ import type { DashboardToday, UserView } from '../lib/types'
 const NAV_MENU = [
   { to: '/', label: 'Today', icon: '🏠', end: true },
   { to: '/diary', label: 'Diary', icon: '✍️', end: false },
+  { to: '/days', label: 'Days', icon: '📔', end: false },
   { to: '/calm', label: 'Calm', icon: '🧘', end: false },
 ]
 

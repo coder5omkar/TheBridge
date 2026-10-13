@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
-import type { DashboardToday, HabitsToday } from '../../lib/types'
+import { answeredCount, moodEmoji, TOTAL_QUESTIONS } from '../../lib/checkin'
+import type { DashboardToday, DaySummary, DiaryView } from '../../lib/types'
 import { CalmChart, SleepChart } from './Charts'
 import InsightsCard from './InsightsCard'
 import QuickActions from './QuickActions'
-import HabitsCard from '../diary/HabitsCard'
-import ThoughtsWidget from '../diary/ThoughtsWidget'
 
 export default function DashboardPage() {
   const query = useQuery({
@@ -14,9 +13,14 @@ export default function DashboardPage() {
     queryFn: () => api<DashboardToday>('/dashboard/today'),
   })
 
-  const habits = useQuery({
-    queryKey: ['habits-today'],
-    queryFn: () => api<HabitsToday>('/habits/today'),
+  const diary = useQuery({
+    queryKey: ['diary-today'],
+    queryFn: () => api<DiaryView | undefined>('/diary/today'),
+  })
+
+  const days = useQuery({
+    queryKey: ['days-calendar'],
+    queryFn: () => api<DaySummary[]>('/days/calendar?days=7'),
   })
 
   if (query.isLoading) {
@@ -44,19 +48,18 @@ export default function DashboardPage() {
     day: 'numeric',
   })
 
+  const sealed = diary.data?.sealedAt != null
+  const answered = answeredCount(diary.data)
+  const progress = sealed ? 100 : Math.round((answered / TOTAL_QUESTIONS) * 100)
+
   const today = new Date(`${data.date}T00:00:00`)
   const week = Array.from({ length: 7 }, (_, index) => {
     const day = new Date(today)
     day.setDate(day.getDate() - (6 - index))
-    return {
-      day,
-      rhythmDone: habits.data?.habits.some((habit) => habit.last7[index]) ?? false,
-    }
+    const key = day.toISOString().slice(0, 10)
+    const summary = days.data?.find((item) => item.date === key)
+    return { day, summary }
   })
-
-  const doneCount = habits.data?.doneCount ?? 0
-  const totalCount = habits.data?.totalCount ?? 0
-  const progress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
@@ -71,16 +74,18 @@ export default function DashboardPage() {
             {greeting}, {data.user.displayName} 🌟
           </h1>
           <p className="mt-2 text-sm text-white/80">
-            {totalCount > 0
-              ? `${doneCount} of ${totalCount} practices checked today`
-              : 'Build your daily rhythm — one tap to start'}
+            {sealed
+              ? 'Day sealed 📔 — kept, read-only, yours.'
+              : answered > 0
+                ? `${answered} of ${TOTAL_QUESTIONS} answered today`
+                : 'The check-in is waiting — two quiet minutes'}
           </p>
           <div className="mt-5 h-1.5 w-48 overflow-hidden rounded-full bg-white/25">
             <div className="h-full rounded-full bg-white transition-all" style={{ width: `${progress}%` }} />
           </div>
           <Link
             to="/diary"
-            title="Open the daily check-in"
+            title={sealed ? 'View the sealed day' : 'Open the daily check-in'}
             className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-lg text-[#4e54f5] shadow-lg transition-transform hover:scale-105"
           >
             →
@@ -88,8 +93,6 @@ export default function DashboardPage() {
         </section>
 
         <QuickActions />
-        <HabitsCard />
-        <ThoughtsWidget />
         <InsightsCard />
 
         {/* Charts */}
@@ -142,7 +145,7 @@ export default function DashboardPage() {
         <section className="rounded-3xl border border-line bg-surface p-5">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-bold uppercase tracking-wider">This week</h2>
-            <span className="text-[10px] text-muted">rhythm</span>
+            <span className="text-[10px] text-muted">kept days</span>
           </div>
           <div className="mt-3 flex justify-between gap-0.5">
             {week.map((entry, index) => (
@@ -156,11 +159,9 @@ export default function DashboardPage() {
                   {entry.day.toLocaleDateString(undefined, { weekday: 'narrow' })}
                 </span>
                 <span className="text-xs font-medium">{entry.day.getDate()}</span>
-                <span
-                  className={`h-1 w-1 rounded-full ${
-                    entry.rhythmDone ? (index === 6 ? 'bg-white' : 'bg-sage') : 'bg-transparent'
-                  }`}
-                />
+                <span className="h-3.5 text-[10px] leading-none">
+                  {entry.summary?.sealed ? '📔' : entry.summary?.mood ? moodEmoji(entry.summary.mood) : ''}
+                </span>
               </div>
             ))}
           </div>

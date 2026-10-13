@@ -20,7 +20,7 @@ public final class SleepDtos {
 	public record View(Long id, LocalDate sleepDate, Instant bedTime, Instant wakeTime,
 			Integer durationMinutes, Integer quality, String delayNote) {
 
-		static View from(SleepLog log) {
+		public static View from(SleepLog log) {
 			return new View(log.getId(), log.getSleepDate(), log.getBedTime(), log.getWakeTime(),
 					duration(log), log.getQuality(), log.getDelayNote());
 		}

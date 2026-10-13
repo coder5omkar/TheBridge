@@ -53,6 +53,7 @@ export type DiaryView = {
   drained: string | null
   gratitude: string | null
   moved: boolean | null
+  sealedAt: string | null
   updatedAt: string
 }
 
@@ -102,23 +103,6 @@ export type SleepResponse = {
   rewards: Rewards
 }
 
-export type ThoughtKind = 'worry' | 'idea' | 'gratitude' | 'task'
-
-export type ThoughtView = {
-  id: number
-  content: string
-  kind: ThoughtKind
-  status: 'open' | 'released'
-  reframe: string | null
-  createdAt: string
-  releasedAt: string | null
-}
-
-export type ThoughtResponse = {
-  thought: ThoughtView
-  rewards: Rewards
-}
-
 export type HealthSummary = {
   heightCm: number | null
   latestWeightKg: number | null
@@ -143,47 +127,41 @@ export type HealthSummaryResponse = {
   rewards: Rewards
 }
 
-export type HabitPart = 'morning' | 'afternoon' | 'evening' | 'anytime'
-
-export type HabitView = {
-  id: number
-  name: string
-  emoji: string
-  part: HabitPart
-  done: boolean
-  streak: number
-  last7: boolean[]
-}
-
-export type HabitsToday = {
-  date: string
-  habits: HabitView[]
-  doneCount: number
-  totalCount: number
-  weekDone: number
-  weekTotal: number
-}
-
-export type HabitsResponse = {
-  today: HabitsToday
-  rewards: Rewards
-}
-
 export type WeeklyInsights = {
   from: string
   to: string
   gemsEarnedWeek: number
-  rhythmConsistency: number | null
-  rhythmChecks: number | null
-  rhythmPossible: number | null
   sleepAvgMinutes: number | null
   sleepNights: number | null
   calmMinutes: number
   calmSessions: number
   moodAvg: number | null
-  bestHabit: string | null
-  bestHabitDays: number | null
-  ignoredHabit: string | null
-  ignoredHabitDays: number | null
+  sealedDays: number
   bullets: { icon: string; text: string }[]
+}
+
+export type DaySummary = {
+  date: string
+  sealed: boolean
+  mood: number | null
+  calmMinutes: number
+  sleepMinutes: number | null
+  meals: number
+  gems: number
+}
+
+export type DayRecord = {
+  date: string
+  entry: DiaryView | null
+  sleep: SleepView | null
+  sessions: { exerciseName: string; kind: string; startedAt: string; minutes: number }[]
+  meals: {
+    id: number
+    mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack'
+    description: string | null
+    homeCooked: boolean | null
+    eatenAt: string
+  }[]
+  weights: { at: string; kg: number }[]
+  gemsEarned: number
 }

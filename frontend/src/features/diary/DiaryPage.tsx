@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
 import GemBurst from '../../components/GemBurst'
+import { MOOD_EMOJIS, TOTAL_QUESTIONS } from '../../lib/checkin'
+import { formatTime } from '../../lib/format'
 import type { DiaryResponse, DiaryView } from '../../lib/types'
 
-const MOODS = ['😞', '😕', '😐', '🙂', '😄']
 const TAG_OPTIONS = ['work', 'family', 'friends', 'health', 'rest', 'learning', 'creativity', 'outdoors']
-const TOTAL_QUESTIONS = 11
 
 type FormState = {
   mood: number | null
@@ -129,6 +130,15 @@ function SectionHeader({
 const inputClass =
   'w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm outline-none transition-colors focus:border-sage'
 
+const ANSWER_ROWS: { label: string; icon: string; key: keyof FormState }[] = [
+  { label: 'Intention', icon: '🌅', key: 'morningIntent' },
+  { label: 'Best moment', icon: '🏆', key: 'highlights' },
+  { label: 'Drained by', icon: '😮‍💨', key: 'drained' },
+  { label: 'Gratitude', icon: '🙏', key: 'gratitude' },
+  { label: 'Evening review', icon: '🌙', key: 'eveningReview' },
+  { label: 'On my mind', icon: '📖', key: 'body' },
+]
+
 export default function DiaryPage() {
   const queryClient = useQueryClient()
   const [form, setForm] = useState<FormState | null>(null)
@@ -169,7 +179,21 @@ export default function DiaryPage() {
       queryClient.setQueryData(['diary-today'], response.entry)
       queryClient.invalidateQueries({ queryKey: ['dashboard-today'] })
       queryClient.invalidateQueries({ queryKey: ['insights-weekly'] })
+      queryClient.invalidateQueries({ queryKey: ['days-calendar'] })
       setSavedAt(new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }))
+      if (response.rewards.gemsAwarded > 0) {
+        setBurst(response.rewards.gemsAwarded)
+      }
+    },
+  })
+
+  const seal = useMutation({
+    mutationFn: () => api<DiaryResponse>('/diary/today/seal', { method: 'POST' }),
+    onSuccess: (response) => {
+      queryClient.setQueryData(['diary-today'], response.entry)
+      queryClient.invalidateQueries({ queryKey: ['dashboard-today'] })
+      queryClient.invalidateQueries({ queryKey: ['days-calendar'] })
+      queryClient.invalidateQueries({ queryKey: ['insights-weekly'] })
       if (response.rewards.gemsAwarded > 0) {
         setBurst(response.rewards.gemsAwarded)
       }
@@ -200,6 +224,68 @@ export default function DiaryPage() {
     )
   }
 
+  // Sealed: the day is a kept, read-only record.
+  if (query.data?.sealedAt) {
+    const entry = query.data
+    return (
+      <div className="flex max-w-3xl flex-col gap-5">
+        {burst !== null && <GemBurst amount={burst} onDone={() => setBurst(null)} />}
+
+        <header className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-semibold tracking-tight">Daily check-in</h1>
+            <p className="mt-1 text-sm text-muted">This day stays exactly as you kept it.</p>
+          </div>
+          <span className="rounded-full bg-[#1b2e22] px-3 py-1 text-xs font-medium text-ink-soft">
+            📔 Sealed {formatTime(entry.sealedAt!)}
+          </span>
+        </header>
+
+        <section className="rounded-3xl border border-line bg-surface p-5">
+          <div className="flex flex-wrap gap-2">
+            <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">
+              {MOOD_EMOJIS[(entry.mood ?? 1) - 1]} mood {entry.mood ?? '—'}/5
+            </span>
+            <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">
+              ⚡ {entry.energy ?? '—'}/5
+            </span>
+            <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">💧 {entry.waterCups ?? 0}</span>
+            {entry.moved != null && (
+              <span className="rounded-full bg-paper px-3 py-1 text-xs text-ink-soft">
+                {entry.moved ? '🚶 moved' : '🪑 rested'}
+              </span>
+            )}
+            {entry.tags.map((tag) => (
+              <span key={tag} className="rounded-full bg-sage-mist px-3 py-1 text-xs text-sage-deep">
+                {tag}
+              </span>
+            ))}
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-3xl border border-line bg-surface">
+          {ANSWER_ROWS.filter((row) => entry[row.key as keyof DiaryView]).map((row) => (
+            <div key={row.key} className="border-b border-line/60 px-5 py-4 last:border-0">
+              <p className="text-[11px] font-bold uppercase tracking-widest text-muted">
+                {row.icon} {row.label}
+              </p>
+              <p className="mt-2 whitespace-pre-wrap text-sm text-ink-soft">
+                {entry[row.key as keyof DiaryView] as string}
+              </p>
+            </div>
+          ))}
+        </section>
+
+        <Link
+          to={`/days/${entry.date}`}
+          className="text-center text-sm text-sage underline-offset-4 hover:underline"
+        >
+          Revisit this day in Days →
+        </Link>
+      </div>
+    )
+  }
+
   if (!form) {
     return <p className="text-sm text-muted">Opening today's page…</p>
   }
@@ -218,9 +304,7 @@ export default function DiaryPage() {
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Daily check-in</h1>
-          <p className="mt-1 text-sm text-muted">
-            Reflection time — everything saves itself as you go.
-          </p>
+          <p className="mt-1 text-sm text-muted">Reflection time — everything saves itself as you go.</p>
         </div>
         <div className="flex items-center gap-3">
           <span className="rounded-full bg-sage-mist px-3 py-1 text-xs font-medium text-sage-deep">
@@ -255,7 +339,7 @@ export default function DiaryPage() {
         </Question>
         <Question index={2} label="How are you feeling right now?">
           <div className="flex gap-2">
-            {MOODS.map((emoji, index) => {
+            {MOOD_EMOJIS.map((emoji, index) => {
               const value = index + 1
               const active = form.mood === value
               return (
@@ -416,6 +500,25 @@ export default function DiaryPage() {
             </Question>
           </div>
         )}
+      </section>
+
+      {/* The seal */}
+      <section className="rounded-3xl border border-line bg-surface p-5">
+        {form.eveningReview.trim() ? (
+          <button
+            type="button"
+            onClick={() => seal.mutate()}
+            disabled={seal.isPending}
+            className="w-full rounded-full bg-gradient-to-br from-[#4e54f5] to-[#8b5cf6] py-3 text-sm font-semibold text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01] disabled:opacity-50"
+          >
+            {seal.isPending ? 'Sealing…' : 'Seal this day 📔 · +5 💎'}
+          </button>
+        ) : (
+          <p className="py-1 text-center text-xs text-muted">
+            Write your evening review to seal the day — it becomes a kept, read-only record · +5 💎
+          </p>
+        )}
+        {seal.isError && <p className="mt-3 text-xs text-rose-300">{seal.error.message}</p>}
       </section>
 
       {mutation.isError && (

@@ -19,11 +19,19 @@ public interface GemLedgerRepository extends JpaRepository<GemLedger, Long> {
 	long sumDeltaByUserSince(@Param("userId") Long userId, @Param("since") Instant since);
 
 	@Query("""
+			select coalesce(sum(g.delta), 0) from GemLedger g
+			where g.userId = :userId and g.createdAt >= :from and g.createdAt < :to
+			""")
+	long sumDeltaByUserBetween(@Param("userId") Long userId, @Param("from") Instant from, @Param("to") Instant to);
+
+	@Query("""
 			select g.createdAt from GemLedger g
 			where g.userId = :userId and g.delta > 0
 			order by g.createdAt desc
 			""")
 	List<Instant> positiveTimestamps(@Param("userId") Long userId);
+
+	List<GemLedger> findByUserIdAndCreatedAtGreaterThanEqualOrderByCreatedAtAsc(Long userId, Instant since);
 
 	boolean existsByUserIdAndRefTypeAndRefId(Long userId, String refType, Long refId);
 }

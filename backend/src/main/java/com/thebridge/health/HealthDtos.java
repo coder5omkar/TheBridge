@@ -38,7 +38,7 @@ public final class HealthDtos {
 
 	public record MealView(Long id, String mealType, String description, Boolean homeCooked, Instant eatenAt) {
 
-		static MealView from(Meal meal) {
+		public static MealView from(Meal meal) {
 			return new MealView(meal.getId(), meal.getMealType(), meal.getDescription(),
 					meal.getHomeCooked(), meal.getEatenAt());
 		}

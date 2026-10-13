@@ -54,6 +54,9 @@ public class DiaryEntry {
 
 	private Boolean moved;
 
+	@Column(name = "sealed_at")
+	private Instant sealedAt;
+
 	@Column(name = "created_at", nullable = false, insertable = false, updatable = false)
 	private Instant createdAt;
 
@@ -166,6 +169,14 @@ public class DiaryEntry {
 
 	public void setMoved(Boolean moved) {
 		this.moved = moved;
+	}
+
+	public Instant getSealedAt() {
+		return sealedAt;
+	}
+
+	public void setSealedAt(Instant sealedAt) {
+		this.sealedAt = sealedAt;
 	}
 
 	public Instant getCreatedAt() {

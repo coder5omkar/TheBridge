@@ -34,6 +34,11 @@ public class GlobalExceptionHandler {
 		return problem(HttpStatus.BAD_REQUEST, ex.getMessage());
 	}
 
+	@ExceptionHandler(DaySealedException.class)
+	ProblemDetail handleDaySealed(DaySealedException ex) {
+		return problem(HttpStatus.CONFLICT, ex.getMessage());
+	}
+
 	private ProblemDetail problem(HttpStatus status, String detail) {
 		ProblemDetail problem = ProblemDetail.forStatusAndDetail(status, detail);
 		problem.setTitle(status.getReasonPhrase());

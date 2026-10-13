@@ -7,6 +7,8 @@ import CalmPage from '../features/calm/CalmPage'
 import ExercisePlayerPage from '../features/calm/ExercisePlayerPage'
 import SosPage from '../features/calm/SosPage'
 import DashboardPage from '../features/dashboard/DashboardPage'
+import DayDetailPage from '../features/days/DayDetailPage'
+import DaysPage from '../features/days/DaysPage'
 import DiaryPage from '../features/diary/DiaryPage'
 import HealthPage from '../features/health/HealthPage'
 
@@ -23,6 +25,8 @@ export const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardPage /> },
       { path: 'diary', element: <DiaryPage /> },
+      { path: 'days', element: <DaysPage /> },
+      { path: 'days/:date', element: <DayDetailPage /> },
       { path: 'calm', element: <CalmPage /> },
       { path: 'calm/sos', element: <SosPage /> },
       { path: 'calm/:slug', element: <ExercisePlayerPage /> },

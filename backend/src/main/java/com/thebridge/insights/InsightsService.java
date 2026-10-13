@@ -5,10 +5,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -21,10 +19,6 @@ import com.thebridge.calm.ExerciseSessionRepository;
 import com.thebridge.common.DayWindow;
 import com.thebridge.diary.DiaryEntry;
 import com.thebridge.diary.DiaryEntryRepository;
-import com.thebridge.habits.Habit;
-import com.thebridge.habits.HabitLog;
-import com.thebridge.habits.HabitLogRepository;
-import com.thebridge.habits.HabitRepository;
 import com.thebridge.insights.InsightsDtos.Bullet;
 import com.thebridge.insights.InsightsDtos.WeeklyInsights;
 import com.thebridge.rewards.GemLedgerRepository;
@@ -40,18 +34,13 @@ import com.thebridge.user.User;
 public class InsightsService {
 
 	private final GemLedgerRepository gemLedgerRepository;
-	private final HabitRepository habitRepository;
-	private final HabitLogRepository habitLogRepository;
 	private final DiaryEntryRepository diaryEntryRepository;
 	private final SleepLogRepository sleepLogRepository;
 	private final ExerciseSessionRepository sessionRepository;
 
-	public InsightsService(GemLedgerRepository gemLedgerRepository, HabitRepository habitRepository,
-			HabitLogRepository habitLogRepository, DiaryEntryRepository diaryEntryRepository,
+	public InsightsService(GemLedgerRepository gemLedgerRepository, DiaryEntryRepository diaryEntryRepository,
 			SleepLogRepository sleepLogRepository, ExerciseSessionRepository sessionRepository) {
 		this.gemLedgerRepository = gemLedgerRepository;
-		this.habitRepository = habitRepository;
-		this.habitLogRepository = habitLogRepository;
 		this.diaryEntryRepository = diaryEntryRepository;
 		this.sleepLogRepository = sleepLogRepository;
 		this.sessionRepository = sessionRepository;
@@ -68,21 +57,10 @@ public class InsightsService {
 		// Gems
 		int gems = (int) gemLedgerRepository.sumDeltaByUserSince(userId, fromInstant);
 
-		// Rhythm
-		List<Habit> habits = habitRepository.findByUserIdAndActiveTrueOrderBySortOrderAscIdAsc(userId);
-		List<HabitLog> habitLogs = habitLogRepository.findByUserIdAndLogDateGreaterThanEqual(userId, from);
-		int possible = habits.size() * 7;
-		int checks = habitLogs.size();
-		Map<Long, Long> perHabit = habitLogs.stream()
-				.collect(Collectors.groupingBy(HabitLog::getHabitId, Collectors.counting()));
-		Habit best = habits.stream()
-				.max(Comparator.comparingLong(habit -> perHabit.getOrDefault(habit.getId(), 0L)))
-				.orElse(null);
-		Habit ignored = habits.size() > 1
-				? habits.stream().min(Comparator.comparingLong(habit -> perHabit.getOrDefault(habit.getId(), 0L)))
-						.orElse(null)
-				: null;
-		Integer rhythmPct = possible > 0 ? (int) Math.round(checks * 100.0 / possible) : null;
+		// Sealed days
+		List<DiaryEntry> entries = diaryEntryRepository
+				.findByUserIdAndEntryDateBetweenOrderByEntryDateAsc(userId, from, today);
+		int sealedDays = (int) entries.stream().filter(entry -> entry.getSealedAt() != null).count();
 
 		// Sleep
 		List<SleepLog> sleepLogs = sleepLogRepository
@@ -105,8 +83,6 @@ public class InsightsService {
 				.collect(Collectors.toSet());
 
 		// Mood
-		List<DiaryEntry> entries = diaryEntryRepository
-				.findByUserIdAndEntryDateBetweenOrderByEntryDateAsc(userId, from, today);
 		List<Integer> moods = entries.stream().map(DiaryEntry::getMood).filter(Objects::nonNull).toList();
 		Double moodAvg = moods.size() >= 2 ? round1(avg(moods)) : null;
 		List<Integer> moodOnCalm = entries.stream()
@@ -121,9 +97,9 @@ public class InsightsService {
 
 		// Bullets — honest and guarded
 		List<Bullet> bullets = new ArrayList<>();
-		if (rhythmPct != null) {
-			bullets.add(new Bullet("🌿", String.format("Rhythm: %d of %d checks — %d%% consistency.",
-					checks, possible, rhythmPct)));
+		if (sealedDays > 0) {
+			bullets.add(new Bullet("📔", String.format("You sealed %d of 7 days — %d kept, read-only.",
+					sealedDays, sealedDays)));
 		}
 		if (sleepAvg != null) {
 			bullets.add(new Bullet("😴", String.format("Slept %s on average across %d nights.",
@@ -144,32 +120,18 @@ public class InsightsService {
 			bullets.add(new Bullet("🙂", String.format("Mood averaged %s/5 across %d check-ins.",
 					fmt1(moodAvg), moods.size())));
 		}
-		if (best != null && perHabit.getOrDefault(best.getId(), 0L) > 0) {
-			bullets.add(new Bullet("🏆", String.format("Strongest practice: %s (%d/7 days).",
-					best.getName(), perHabit.getOrDefault(best.getId(), 0L))));
-		}
-		if (ignored != null) {
-			bullets.add(new Bullet("⏳", String.format("Waiting for you: %s (%d/7 days).",
-					ignored.getName(), perHabit.getOrDefault(ignored.getId(), 0L))));
-		}
 		bullets.add(new Bullet("💎", String.format("Earned %d gems this week.", gems)));
-		if (bullets.size() < 4) {
+		if (bullets.size() < 3) {
 			bullets.add(new Bullet("✨", "Keep checking in — patterns appear after a few more days."));
 		}
 
 		return new WeeklyInsights(
 				from, today, gems,
-				rhythmPct,
-				possible > 0 ? checks : null,
-				possible > 0 ? possible : null,
 				sleepAvg,
 				sleepAvg != null ? nightMinutes.size() : null,
 				calmMinutes, sessions.size(),
 				moodAvg,
-				best != null ? best.getName() : null,
-				best != null ? perHabit.getOrDefault(best.getId(), 0L).intValue() : null,
-				ignored != null ? ignored.getName() : null,
-				ignored != null ? perHabit.getOrDefault(ignored.getId(), 0L).intValue() : null,
+				sealedDays,
 				bullets);
 	}
 

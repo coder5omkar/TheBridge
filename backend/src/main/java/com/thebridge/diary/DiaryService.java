@@ -3,12 +3,12 @@ package com.thebridge.diary;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.thebridge.common.DaySealedException;
 import com.thebridge.common.DayWindow;
 import com.thebridge.diary.DiaryDtos.Response;
 import com.thebridge.diary.DiaryDtos.UpsertRequest;
@@ -40,6 +40,9 @@ public class DiaryService {
 		Instant since = window.startOf(today);
 
 		DiaryEntry entry = repository.findByUserIdAndEntryDate(user.getId(), today).orElse(null);
+		if (entry != null && entry.getSealedAt() != null) {
+			throw new DaySealedException();
+		}
 		boolean created = entry == null;
 		if (created) {
 			entry = new DiaryEntry();
@@ -47,7 +50,7 @@ public class DiaryService {
 			entry.setEntryDate(today);
 		}
 
-			entry.setMood(request.mood());
+		entry.setMood(request.mood());
 		entry.setEnergy(request.energy());
 		entry.setMorningIntent(trimToNull(request.morningIntent()));
 		entry.setEveningReview(trimToNull(request.eveningReview()));
@@ -69,6 +72,35 @@ public class DiaryService {
 			gems += gemService.awardOnce(user.getId(), 3, "evening_review", "evening_review", entry.getId(), since);
 		}
 
+		return new Response(View.from(entry), gemService.rewards(user.getId(), since, gems));
+	}
+
+	/**
+	 * The nightly ritual: seal today as a kept, read-only record.
+	 * Requires the evening review — a day isn't done until it's reflected on.
+	 */
+	@Transactional
+	public Response seal(User user) {
+		DayWindow window = window(user);
+		LocalDate today = window.today();
+		Instant since = window.startOf(today);
+
+		DiaryEntry entry = repository.findByUserIdAndEntryDate(user.getId(), today)
+				.orElseThrow(() -> new IllegalArgumentException(
+						"Nothing to seal yet — answer a few questions first."));
+		if (entry.getSealedAt() != null) {
+			throw new DaySealedException();
+		}
+		if (entry.getEveningReview() == null || entry.getEveningReview().isBlank()) {
+			throw new IllegalArgumentException(
+					"The evening review is the seal — write a line about the day first.");
+		}
+
+		entry.setSealedAt(Instant.now());
+		entry.setUpdatedAt(Instant.now());
+		repository.save(entry);
+
+		int gems = gemService.awardOnce(user.getId(), 5, "day_sealed", "day_sealed", today.toEpochDay(), since);
 		return new Response(View.from(entry), gemService.rewards(user.getId(), since, gems));
 	}
 

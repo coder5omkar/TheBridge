@@ -70,6 +70,7 @@ export default function QuickActions() {
   const inBedOnly = log?.bedTime != null && log.wakeTime == null
   const completed = log?.bedTime != null && log.wakeTime != null
   const waterCount = diary.data?.waterCups ?? 0
+  const daySealed = diary.data?.sealedAt != null
 
   const actionButton =
     'rounded-full px-4 py-2 text-xs font-medium transition-colors disabled:opacity-50'
@@ -126,10 +127,11 @@ export default function QuickActions() {
           <button
             type="button"
             onClick={() => water.mutate()}
-            disabled={water.isPending}
-            className={`${actionButton} border border-line bg-paper text-ink-soft hover:border-sage`}
+            disabled={water.isPending || daySealed}
+            title={daySealed ? 'This day is sealed — read-only' : 'Log a glass of water'}
+            className={`${actionButton} border border-line bg-paper text-ink-soft hover:border-sage disabled:opacity-50`}
           >
-            +1 glass
+            {daySealed ? 'Sealed 📔' : '+1 glass'}
           </button>
         </div>
 

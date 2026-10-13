@@ -18,14 +18,14 @@ public final class DiaryDtos {
 	public record View(Long id, LocalDate date, Integer mood, Integer energy,
 			String morningIntent, String eveningReview, String body, List<String> tags,
 			Integer waterCups, String highlights, String drained, String gratitude, Boolean moved,
-			Instant updatedAt) {
+			Instant sealedAt, Instant updatedAt) {
 
-		static View from(DiaryEntry entry) {
+		public static View from(DiaryEntry entry) {
 			return new View(entry.getId(), entry.getEntryDate(), entry.getMood(), entry.getEnergy(),
 					entry.getMorningIntent(), entry.getEveningReview(), entry.getBody(),
 					entry.getTags() == null ? List.of() : Arrays.asList(entry.getTags()),
 					entry.getWaterCups(), entry.getHighlights(), entry.getDrained(), entry.getGratitude(),
-					entry.getMoved(), entry.getUpdatedAt());
+					entry.getMoved(), entry.getSealedAt(), entry.getUpdatedAt());
 		}
 	}
 

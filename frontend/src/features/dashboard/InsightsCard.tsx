@@ -52,11 +52,9 @@ export default function InsightsCard() {
                 😴 {formatMinutes(data.sleepAvgMinutes)} avg
               </span>
             )}
-            {data.rhythmConsistency != null && (
-              <span className="rounded-full bg-[#1b2e22] px-2.5 py-1 text-[11px] font-medium text-ink-soft">
-                🌿 {data.rhythmConsistency}%
-              </span>
-            )}
+            <span className="rounded-full bg-[#1b2e22] px-2.5 py-1 text-[11px] font-medium text-ink-soft">
+              📔 {data.sealedDays}/7 sealed
+            </span>
           </div>
         </>
       )}

@@ -3,6 +3,7 @@ package com.thebridge.diary;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,5 +37,10 @@ public class DiaryController {
 	@PutMapping("/today")
 	public Response save(@AuthenticationPrincipal User user, @Valid @RequestBody UpsertRequest request) {
 		return diaryService.save(user, request);
+	}
+
+	@PostMapping("/today/seal")
+	public Response seal(@AuthenticationPrincipal User user) {
+		return diaryService.seal(user);
 	}
 }
