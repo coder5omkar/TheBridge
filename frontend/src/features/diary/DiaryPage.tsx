@@ -1,11 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import GemBurst from '../../components/GemBurst'
 import type { DiaryResponse, DiaryView } from '../../lib/types'
-import HabitsCard from './HabitsCard'
-import SleepCard from './SleepCard'
-import ThoughtsWidget from './ThoughtsWidget'
 
 const MOODS = ['😞', '😕', '😐', '🙂', '😄']
 const TAG_OPTIONS = ['work', 'family', 'friends', 'health', 'rest', 'learning', 'creativity', 'outdoors']
@@ -14,30 +11,30 @@ const TOTAL_QUESTIONS = 11
 type FormState = {
   mood: number | null
   energy: number | null
-  waterCups: number
   morningIntent: string
+  waterCups: number
+  moved: boolean | null
+  tags: string[]
   highlights: string
   drained: string
   gratitude: string
   eveningReview: string
   body: string
-  tags: string[]
-  moved: boolean | null
 }
 
 function emptyForm(): FormState {
   return {
     mood: null,
     energy: null,
-    waterCups: 0,
     morningIntent: '',
+    waterCups: 0,
+    moved: null,
+    tags: [],
     highlights: '',
     drained: '',
     gratitude: '',
     eveningReview: '',
     body: '',
-    tags: [],
-    moved: null,
   }
 }
 
@@ -45,15 +42,15 @@ function formFrom(view: DiaryView): FormState {
   return {
     mood: view.mood,
     energy: view.energy,
-    waterCups: view.waterCups ?? 0,
     morningIntent: view.morningIntent ?? '',
+    waterCups: view.waterCups ?? 0,
+    moved: view.moved,
+    tags: view.tags ?? [],
     highlights: view.highlights ?? '',
     drained: view.drained ?? '',
     gratitude: view.gratitude ?? '',
     eveningReview: view.eveningReview ?? '',
     body: view.body ?? '',
-    tags: view.tags ?? [],
-    moved: view.moved,
   }
 }
 
@@ -61,15 +58,15 @@ function answeredCount(form: FormState): number {
   let count = 0
   if (form.mood) count++
   if (form.energy) count++
-  if (form.waterCups > 0) count++
   if (form.morningIntent.trim()) count++
+  if (form.waterCups > 0) count++
+  if (form.moved !== null) count++
+  if (form.tags.length > 0) count++
   if (form.highlights.trim()) count++
   if (form.drained.trim()) count++
   if (form.gratitude.trim()) count++
   if (form.eveningReview.trim()) count++
   if (form.body.trim()) count++
-  if (form.tags.length > 0) count++
-  if (form.moved !== null) count++
   return count
 }
 
@@ -98,6 +95,37 @@ function Question({
   )
 }
 
+function SectionHeader({
+  icon,
+  title,
+  note,
+  collapsible,
+  open,
+  onToggle,
+}: {
+  icon: string
+  title: string
+  note?: string
+  collapsible?: boolean
+  open?: boolean
+  onToggle?: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={collapsible ? onToggle : undefined}
+      className={`flex w-full items-center gap-2 bg-paper/60 px-5 py-3 text-left ${
+        collapsible ? 'cursor-pointer' : 'cursor-default'
+      }`}
+    >
+      <span aria-hidden>{icon}</span>
+      <span className="text-[11px] font-bold uppercase tracking-widest text-muted">{title}</span>
+      {note && <span className="text-[10px] font-normal text-muted">{note}</span>}
+      {collapsible && <span className="ml-auto text-xs text-muted">{open ? '▾' : '▸'}</span>}
+    </button>
+  )
+}
+
 const inputClass =
   'w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm outline-none transition-colors focus:border-sage'
 
@@ -106,6 +134,8 @@ export default function DiaryPage() {
   const [form, setForm] = useState<FormState | null>(null)
   const [burst, setBurst] = useState<number | null>(null)
   const [savedAt, setSavedAt] = useState<string | null>(null)
+  const [eveningOpen, setEveningOpen] = useState(() => new Date().getHours() >= 17)
+  const dirtyRef = useRef(false)
 
   const query = useQuery({
     queryKey: ['diary-today'],
@@ -138,12 +168,21 @@ export default function DiaryPage() {
     onSuccess: (response) => {
       queryClient.setQueryData(['diary-today'], response.entry)
       queryClient.invalidateQueries({ queryKey: ['dashboard-today'] })
+      queryClient.invalidateQueries({ queryKey: ['insights-weekly'] })
       setSavedAt(new Date().toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' }))
       if (response.rewards.gemsAwarded > 0) {
         setBurst(response.rewards.gemsAwarded)
       }
     },
   })
+
+  // Autosave: every change saves itself ~1s later. No Save button needed.
+  useEffect(() => {
+    if (!form || !dirtyRef.current) return
+    const timer = setTimeout(() => mutation.mutate(form), 900)
+    return () => clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form])
 
   if (query.isError) {
     return (
@@ -165,9 +204,12 @@ export default function DiaryPage() {
     return <p className="text-sm text-muted">Opening today's page…</p>
   }
 
-  const update = (patch: Partial<FormState>) => setForm({ ...form, ...patch })
+  const update = (patch: Partial<FormState>) => {
+    dirtyRef.current = true
+    setForm({ ...form, ...patch })
+  }
+
   const answered = answeredCount(form)
-  const progress = Math.round((answered / TOTAL_QUESTIONS) * 100)
 
   return (
     <div className="flex max-w-3xl flex-col gap-5">
@@ -177,22 +219,41 @@ export default function DiaryPage() {
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">Daily check-in</h1>
           <p className="mt-1 text-sm text-muted">
-            The 11 things that shape a day — takes about two minutes.
+            Reflection time — everything saves itself as you go.
           </p>
         </div>
         <div className="flex items-center gap-3">
           <span className="rounded-full bg-sage-mist px-3 py-1 text-xs font-medium text-sage-deep">
             {answered}/{TOTAL_QUESTIONS} answered
           </span>
+          {mutation.isPending ? (
+            <span className="text-xs text-muted">Saving…</span>
+          ) : savedAt ? (
+            <span className="text-xs text-muted">Saved {savedAt} ✓</span>
+          ) : null}
         </div>
       </header>
 
       <div className="h-1.5 w-full overflow-hidden rounded-full bg-surface">
-        <div className="h-full rounded-full bg-sage transition-all duration-300" style={{ width: `${progress}%` }} />
+        <div
+          className="h-full rounded-full bg-sage transition-all duration-300"
+          style={{ width: `${Math.round((answered / TOTAL_QUESTIONS) * 100)}%` }}
+        />
       </div>
 
+      {/* ☀️ Morning */}
       <section className="overflow-hidden rounded-3xl border border-line bg-surface">
-        <Question index={1} label="How are you feeling right now?">
+        <SectionHeader icon="☀️" title="Morning" />
+        <Question index={1} label="One intention for today 🌅">
+          <input
+            className={inputClass}
+            value={form.morningIntent}
+            onChange={(event) => update({ morningIntent: event.target.value })}
+            placeholder="What matters most today?"
+            maxLength={500}
+          />
+        </Question>
+        <Question index={2} label="How are you feeling right now?">
           <div className="flex gap-2">
             {MOODS.map((emoji, index) => {
               const value = index + 1
@@ -213,8 +274,7 @@ export default function DiaryPage() {
             })}
           </div>
         </Question>
-
-        <Question index={2} label="Energy level?">
+        <Question index={3} label="Energy level?">
           <div className="flex items-center gap-2">
             {[1, 2, 3, 4, 5].map((value) => (
               <button
@@ -230,8 +290,12 @@ export default function DiaryPage() {
             <span className="ml-2 text-xs text-muted">{form.energy ? `${form.energy}/5` : '—'}</span>
           </div>
         </Question>
+      </section>
 
-        <Question index={3} label="Glasses of water today 💧">
+      {/* 🌤 During the day */}
+      <section className="overflow-hidden rounded-3xl border border-line bg-surface">
+        <SectionHeader icon="🌤️" title="During the day" />
+        <Question index={4} label="Glasses of water 💧">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -251,66 +315,26 @@ export default function DiaryPage() {
             <span className="text-xs text-muted">aim for 8</span>
           </div>
         </Question>
-
-        <Question index={4} label="One intention for today 🌅">
-          <input
-            className={inputClass}
-            value={form.morningIntent}
-            onChange={(event) => update({ morningIntent: event.target.value })}
-            placeholder="What matters most today?"
-            maxLength={500}
-          />
+        <Question index={5} label="Moved your body today? 🚶">
+          <div className="flex gap-2">
+            {[
+              { label: 'Yes, moved it', value: true },
+              { label: 'Not today', value: false },
+            ].map((option) => (
+              <button
+                key={option.label}
+                type="button"
+                onClick={() => update({ moved: form.moved === option.value ? null : option.value })}
+                className={`rounded-full px-4 py-2 text-xs font-medium transition-colors ${
+                  form.moved === option.value ? 'bg-sage text-white' : 'bg-paper text-muted hover:text-ink-soft'
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
         </Question>
-
-        <Question index={5} label="Best moment / biggest win 🏆">
-          <input
-            className={inputClass}
-            value={form.highlights}
-            onChange={(event) => update({ highlights: event.target.value })}
-            placeholder="However small — name it."
-            maxLength={1000}
-          />
-        </Question>
-
-        <Question index={6} label="What drained you? 😮‍💨">
-          <input
-            className={inputClass}
-            value={form.drained}
-            onChange={(event) => update({ drained: event.target.value })}
-            placeholder="Name the leak so it loses power."
-            maxLength={1000}
-          />
-        </Question>
-
-        <Question index={7} label="One thing you're grateful for 🙏">
-          <input
-            className={inputClass}
-            value={form.gratitude}
-            onChange={(event) => update({ gratitude: event.target.value })}
-            placeholder="Small counts."
-            maxLength={1000}
-          />
-        </Question>
-
-        <Question index={8} label="How did today go? 🌙" hint="+3 💎 once">
-          <textarea
-            className={`${inputClass} min-h-24`}
-            value={form.eveningReview}
-            onChange={(event) => update({ eveningReview: event.target.value })}
-            placeholder="One honest line about the day."
-          />
-        </Question>
-
-        <Question index={9} label="Anything else on your mind 📖">
-          <textarea
-            className={`${inputClass} min-h-24`}
-            value={form.body}
-            onChange={(event) => update({ body: event.target.value })}
-            placeholder="Free space — no structure needed."
-          />
-        </Question>
-
-        <Question index={10} label="What did today involve? 🏷">
+        <Question index={6} label="What did today involve? 🏷">
           <div className="flex flex-wrap gap-1.5">
             {TAG_OPTIONS.map((tag) => {
               const active = form.tags.includes(tag)
@@ -333,46 +357,70 @@ export default function DiaryPage() {
             })}
           </div>
         </Question>
-
-        <Question index={11} label="Moved your body today? 🚶">
-          <div className="flex gap-2">
-            {[
-              { label: 'Yes, moved it', value: true },
-              { label: 'Not today', value: false },
-            ].map((option) => (
-              <button
-                key={option.label}
-                type="button"
-                onClick={() => update({ moved: form.moved === option.value ? null : option.value })}
-                className={`rounded-full px-4 py-2 text-xs font-medium transition-colors ${
-                  form.moved === option.value
-                    ? 'bg-sage text-white'
-                    : 'bg-paper text-muted hover:text-ink-soft'
-                }`}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </Question>
       </section>
 
-      <div className="flex items-center gap-4">
-        <button
-          type="button"
-          onClick={() => mutation.mutate(form)}
-          disabled={mutation.isPending}
-          className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
-        >
-          {mutation.isPending ? 'Saving…' : 'Save today'}
-        </button>
-        {savedAt && !mutation.isPending && <span className="text-xs text-muted">Saved at {savedAt} ✓</span>}
-        {mutation.isError && <span className="text-xs text-rose-300">{mutation.error.message}</span>}
-      </div>
+      {/* 🌙 Evening */}
+      <section className="overflow-hidden rounded-3xl border border-line bg-surface">
+        <SectionHeader
+          icon="🌙"
+          title="Evening"
+          note={eveningOpen ? undefined : 'unlocks tonight — tap to peek'}
+          collapsible
+          open={eveningOpen}
+          onToggle={() => setEveningOpen(!eveningOpen)}
+        />
+        {eveningOpen && (
+          <div>
+            <Question index={7} label="Best moment / biggest win 🏆">
+              <input
+                className={inputClass}
+                value={form.highlights}
+                onChange={(event) => update({ highlights: event.target.value })}
+                placeholder="However small — name it."
+                maxLength={1000}
+              />
+            </Question>
+            <Question index={8} label="What drained you? 😮‍💨">
+              <input
+                className={inputClass}
+                value={form.drained}
+                onChange={(event) => update({ drained: event.target.value })}
+                placeholder="Name the leak so it loses power."
+                maxLength={1000}
+              />
+            </Question>
+            <Question index={9} label="One thing you're grateful for 🙏">
+              <input
+                className={inputClass}
+                value={form.gratitude}
+                onChange={(event) => update({ gratitude: event.target.value })}
+                placeholder="Small counts."
+                maxLength={1000}
+              />
+            </Question>
+            <Question index={10} label="How did today go? 🌙" hint="+3 💎 once">
+              <textarea
+                className={`${inputClass} min-h-24`}
+                value={form.eveningReview}
+                onChange={(event) => update({ eveningReview: event.target.value })}
+                placeholder="One honest line about the day."
+              />
+            </Question>
+            <Question index={11} label="Anything else on your mind 📖">
+              <textarea
+                className={`${inputClass} min-h-24`}
+                value={form.body}
+                onChange={(event) => update({ body: event.target.value })}
+                placeholder="Free space — no structure needed."
+              />
+            </Question>
+          </div>
+        )}
+      </section>
 
-      <HabitsCard />
-      <ThoughtsWidget />
-      <SleepCard />
+      {mutation.isError && (
+        <p className="text-xs text-rose-300">Could not save: {mutation.error.message}</p>
+      )}
     </div>
   )
 }

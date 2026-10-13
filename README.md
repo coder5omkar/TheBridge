@@ -69,11 +69,10 @@ login screen. The first account becomes the only account — registration closes
 
 ## Structure
 
-- **Today** — dashboard: checklist, gems, streak, sleep + calm charts
-- **Diary** — the daily check-in: an 11-question questionnaire (mood, energy, water, intention, wins, drains, gratitude, review, mind, tags, movement) plus my rhythm habits, thoughts inbox and sleep card
-- **Calm** — breathing exercises with the 60-second SOS reset
+- **Today** — the cockpit: quick actions (sleep taps, 💧 water, thought capture, 60-second reset), rhythm habits, weekly insights and charts
+- **Diary** — the daily check-in: 11 questions staged Morning / During the day / Evening, autosaved as you go
+- **Calm** — breathing plus a 5-4-3-2-1 grounding step-through, with the 60-second SOS reset
 - **Health** — weight (+BMI via height) and food / eating habits
-- **Garden** — Phase 2 gem sink
 
 ## API (Phase 1)
 
@@ -81,6 +80,7 @@ login screen. The first account becomes the only account — registration closes
 POST /api/v1/auth/login        → { token, expiresAt, user }
 GET  /api/v1/auth/me           → current user (includes heightCm)
 GET  /api/v1/dashboard/today   → checklist state, gems, streak, 14-day sleep & calm charts
+GET  /api/v1/insights/weekly   → rhythm consistency, sleep average, calm minutes, mood, habit spotlight
 GET  /api/v1/diary/today       → today's entry (204 when empty)   PUT to upsert (+2 💎 first save, +3 💎 evening review)
 GET  /api/v1/calm/exercises    → seeded catalog with breathing patterns
 POST /api/v1/calm/sessions     → record practice (1 💎/min + 2 💎 first of day), kind=regular|sos

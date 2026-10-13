@@ -1,9 +1,12 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
-import { formatMinutes } from '../../lib/format'
 import type { DashboardToday, HabitsToday } from '../../lib/types'
 import { CalmChart, SleepChart } from './Charts'
+import InsightsCard from './InsightsCard'
+import QuickActions from './QuickActions'
+import HabitsCard from '../diary/HabitsCard'
+import ThoughtsWidget from '../diary/ThoughtsWidget'
 
 export default function DashboardPage() {
   const query = useQuery({
@@ -55,57 +58,10 @@ export default function DashboardPage() {
   const totalCount = habits.data?.totalCount ?? 0
   const progress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
-  const loop = [
-    {
-      to: '/diary',
-      icon: '🌿',
-      tint: 'bg-[#1b2e22]',
-      label: 'My rhythm',
-      detail:
-        totalCount > 0
-          ? `${doneCount}/${totalCount} practices · ${habits.data?.weekDone ?? 0} this week`
-          : 'Build your daily rhythm — one tap to start',
-      done: totalCount > 0 && doneCount === totalCount,
-    },
-    {
-      to: '/diary',
-      icon: '✍️',
-      tint: 'bg-sage-mist',
-      label: 'Diary & thoughts',
-      detail: data.today.diary.done
-        ? `Mood ${data.today.diary.mood ?? '—'}/5 — evening review earns +3 💎`
-        : 'Mood, intention, thoughts, evening review',
-      done: data.today.diary.done,
-    },
-    {
-      to: '/calm',
-      icon: '🧘',
-      tint: 'bg-[#2f2340]',
-      label: 'Calm practice',
-      detail:
-        data.today.calm.minutes > 0
-          ? `${formatMinutes(data.today.calm.minutes)} practiced today`
-          : 'A 60-second reset already counts',
-      done: data.today.calm.sessions > 0,
-    },
-    {
-      to: '/diary',
-      icon: '🌙',
-      tint: 'bg-[#16304a]',
-      label: 'Sleep',
-      detail: data.today.sleep.logged
-        ? data.today.sleep.durationMinutes != null
-          ? `Slept ${formatMinutes(data.today.sleep.durationMinutes)}`
-          : 'Wake-up logged'
-        : 'Bedtime and wake-up live in the diary',
-      done: data.today.sleep.logged,
-    },
-  ]
-
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
-      {/* Main column */}
-      <div className="flex min-w-0 flex-col gap-6">
+      {/* Main column — act, then observe */}
+      <div className="flex min-w-0 flex-col gap-5">
         {/* Hero */}
         <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#4e54f5] via-[#6d5af7] to-[#8b5cf6] p-6 text-white">
           <span className="inline-flex rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium">
@@ -124,45 +80,17 @@ export default function DashboardPage() {
           </div>
           <Link
             to="/diary"
-            title="Open diary"
+            title="Open the daily check-in"
             className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-lg text-[#4e54f5] shadow-lg transition-transform hover:scale-105"
           >
             →
           </Link>
         </section>
 
-        {/* Today's loop */}
-        <section>
-          <h2 className="text-xs font-bold uppercase tracking-wider">Today's loop</h2>
-          <ul className="mt-3 flex flex-col gap-2.5">
-            {loop.map((item) => (
-              <li key={item.label}>
-                <Link
-                  to={item.to}
-                  className="flex items-center gap-3.5 rounded-2xl border border-line bg-surface px-4 py-3.5 transition-colors hover:border-sage/60"
-                >
-                  <span
-                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${item.tint}`}
-                    aria-hidden
-                  >
-                    {item.icon}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-semibold">{item.label}</span>
-                    <span className="block truncate text-xs text-muted">{item.detail}</span>
-                  </span>
-                  <span
-                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${
-                      item.done ? 'bg-sage text-white' : 'border border-line text-transparent'
-                    }`}
-                  >
-                    ✓
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
+        <QuickActions />
+        <HabitsCard />
+        <ThoughtsWidget />
+        <InsightsCard />
 
         {/* Charts */}
         <section className="flex flex-col gap-4">
@@ -180,8 +108,8 @@ export default function DashboardPage() {
         </section>
       </div>
 
-      {/* Right rail */}
-      <aside className="flex flex-col gap-4 lg:pt-0">
+      {/* Right rail — status at a glance */}
+      <aside className="flex flex-col gap-4">
         <section className="rounded-3xl border border-line bg-surface p-5">
           <div className="flex items-center gap-2.5">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gem-soft text-base">💎</span>

@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import AppShell from '../components/AppShell'
-import PlaceholderPage from '../components/PlaceholderPage'
 import ProtectedRoute from '../components/ProtectedRoute'
 import RouteError from '../components/RouteError'
 import LoginPage from '../features/auth/LoginPage'
@@ -28,15 +27,6 @@ export const router = createBrowserRouter([
       { path: 'calm/sos', element: <SosPage /> },
       { path: 'calm/:slug', element: <ExercisePlayerPage /> },
       { path: 'health', element: <HealthPage /> },
-      {
-        path: 'garden',
-        element: (
-          <PlaceholderPage icon="🪴" title="Garden" phase={2}>
-            Where gems bloom: plants grow with care, and calm themes unlock with what you
-            have earned.
-          </PlaceholderPage>
-        ),
-      },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },

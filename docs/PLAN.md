@@ -263,3 +263,4 @@ Notes:
 | 2026-10-12 | Day boundary configurable (`day_start_hour`) | Night owls must not get "wrong day" diaries |
 | 2026-10-12 | Diary = daily hub; new Health section for weight/food/height; thoughts + sleep folded into diary | One page per daily rhythm; weight and eating are slow signals, not daily journal material |
 | 2026-10-12 | **My rhythm** habits in the diary: user-defined practices by day part, tap-to-check, streaks + last-7-dots; +1 💎 per habit/day | The diary must *create* the daily rhythm and make habits observable, not just record text |
+| 2026-10-13 | **Act on Today, reflect in Diary**: quick actions + habits + thoughts + weekly insights moved to the cockpit; diary becomes a time-staged, autosaving check-in; grounding playable; placeholders removed | Actions were buried inside the diary form; observation had no payoff; dead UI erodes trust |

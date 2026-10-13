@@ -168,3 +168,22 @@ export type HabitsResponse = {
   today: HabitsToday
   rewards: Rewards
 }
+
+export type WeeklyInsights = {
+  from: string
+  to: string
+  gemsEarnedWeek: number
+  rhythmConsistency: number | null
+  rhythmChecks: number | null
+  rhythmPossible: number | null
+  sleepAvgMinutes: number | null
+  sleepNights: number | null
+  calmMinutes: number
+  calmSessions: number
+  moodAvg: number | null
+  bestHabit: string | null
+  bestHabitDays: number | null
+  ignoredHabit: string | null
+  ignoredHabitDays: number | null
+  bullets: { icon: string; text: string }[]
+}

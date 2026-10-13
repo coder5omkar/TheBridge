@@ -17,8 +17,9 @@ export default function CalmPage() {
     return <p className="text-sm text-rose-300">Could not load exercises: {query.error?.message}</p>
   }
 
-  const breathing = query.data.filter((exercise) => exercise.type === 'breathing')
-  const others = query.data.filter((exercise) => exercise.type !== 'breathing')
+  const playable = query.data.filter(
+    (exercise) => exercise.type === 'breathing' || exercise.type === 'grounding',
+  )
 
   return (
     <div className="flex max-w-2xl flex-col gap-6">
@@ -44,54 +45,42 @@ export default function CalmPage() {
       </Link>
 
       <section>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">Breathing</h2>
+        <h2 className="text-xs font-bold uppercase tracking-wider">Breathing & grounding</h2>
         <div className="mt-3 flex flex-col gap-3">
-          {breathing.map((exercise) => (
-            <Link
-              key={exercise.id}
-              to={`/calm/${exercise.slug}`}
-              className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 transition-colors hover:border-sage"
-            >
-              <span className="text-2xl">{exercise.sos ? '🆘' : '🌬️'}</span>
-              <span className="min-w-0">
-                <span className="flex items-center gap-2 text-sm font-semibold">
-                  {exercise.name}
-                  {exercise.sos && (
-                    <span className="rounded-full bg-gem-soft px-2 py-0.5 text-[10px] font-medium text-gem">
-                      SOS
-                    </span>
-                  )}
+          {playable.map((exercise) => {
+            const steps =
+              exercise.type === 'grounding' &&
+              exercise.pattern &&
+              !Array.isArray(exercise.pattern) &&
+              Array.isArray((exercise.pattern as Record<string, unknown>).steps)
+                ? ((exercise.pattern as Record<string, unknown>).steps as string[]).length
+                : null
+            return (
+              <Link
+                key={exercise.id}
+                to={`/calm/${exercise.slug}`}
+                className="flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 transition-colors hover:border-sage"
+              >
+                <span className="text-2xl" aria-hidden>
+                  {exercise.sos ? '🆘' : exercise.type === 'grounding' ? '🧎' : '🌬️'}
                 </span>
-                <span className="block truncate text-xs text-muted">{exercise.description}</span>
-              </span>
-              <span className="ml-auto shrink-0 text-xs text-muted">
-                {exercise.durationOptions.join(' / ')} min
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
-          Grounding & body
-        </h2>
-        <div className="mt-3 flex flex-col gap-3">
-          {others.map((exercise) => (
-            <div
-              key={exercise.id}
-              className="flex items-center gap-4 rounded-3xl border border-line bg-surface/60 p-5 opacity-70"
-            >
-              <span className="text-2xl">🧎</span>
-              <span className="min-w-0">
-                <span className="block text-sm font-semibold">{exercise.name}</span>
-                <span className="block truncate text-xs text-muted">{exercise.description}</span>
-              </span>
-              <span className="ml-auto shrink-0 rounded-full bg-amber-soft px-2.5 py-1 text-[10px] font-medium text-ink-soft">
-                Phase 2
-              </span>
-            </div>
-          ))}
+                <span className="min-w-0">
+                  <span className="flex items-center gap-2 text-sm font-semibold">
+                    {exercise.name}
+                    {exercise.sos && (
+                      <span className="rounded-full bg-sage-mist px-2 py-0.5 text-[10px] font-medium text-sage-deep">
+                        SOS
+                      </span>
+                    )}
+                  </span>
+                  <span className="block truncate text-xs text-muted">{exercise.description}</span>
+                </span>
+                <span className="ml-auto shrink-0 text-xs text-muted">
+                  {steps ? `${steps} steps` : `${exercise.durationOptions.join(' / ')} min`}
+                </span>
+              </Link>
+            )
+          })}
         </div>
       </section>
     </div>

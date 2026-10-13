@@ -1,7 +1,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { api, setToken } from '../lib/api'
-import type { UserView } from '../lib/types'
+import type { DashboardToday, UserView } from '../lib/types'
 
 const NAV_MENU = [
   { to: '/', label: 'Today', icon: '🏠', end: true },
@@ -9,10 +9,7 @@ const NAV_MENU = [
   { to: '/calm', label: 'Calm', icon: '🧘', end: false },
 ]
 
-const NAV_LIFE = [
-  { to: '/health', label: 'Health', icon: '🩺', end: false },
-  { to: '/garden', label: 'Garden', icon: '🪴', end: false },
-]
+const NAV_LIFE = [{ to: '/health', label: 'Health', icon: '🩺', end: false }]
 
 const NAV_MOBILE = [...NAV_MENU, ...NAV_LIFE]
 
@@ -33,6 +30,11 @@ export default function AppShell() {
     retry: false,
   })
 
+  const summary = useQuery({
+    queryKey: ['dashboard-today'],
+    queryFn: () => api<DashboardToday>('/dashboard/today'),
+  })
+
   function logout() {
     setToken(null)
     queryClient.clear()
@@ -46,16 +48,26 @@ export default function AppShell() {
       <div className="mx-auto flex h-[calc(100vh-1.5rem)] max-w-6xl overflow-hidden rounded-[28px] bg-paper shadow-2xl shadow-black/30 md:h-[calc(100vh-3rem)]">
         {/* Sidebar (desktop) */}
         <aside className="hidden w-60 shrink-0 flex-col border-r border-line/60 bg-[#101013] p-5 md:flex">
-          <div className="flex items-center gap-3 rounded-2xl bg-surface/60 p-3">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sage to-[#8b5cf6] text-sm font-bold text-white">
-              {initials}
-            </span>
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold">
-                {me.data?.displayName ?? '…'}
+          <div className="rounded-2xl bg-surface/60 p-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-sage to-[#8b5cf6] text-sm font-bold text-white">
+                {initials}
               </span>
-              <span className="block truncate text-[11px] text-muted">{me.data?.email ?? ''}</span>
-            </span>
+              <span className="min-w-0">
+                <span className="block truncate text-sm font-semibold">
+                  {me.data?.displayName ?? '…'}
+                </span>
+                <span className="block truncate text-[11px] text-muted">{me.data?.email ?? ''}</span>
+              </span>
+            </div>
+            <div className="mt-2.5 flex gap-2">
+              <span className="rounded-full bg-gem-soft px-2.5 py-0.5 text-[11px] font-medium text-gem">
+                💎 {summary.data?.gems.balance ?? '–'}
+              </span>
+              <span className="rounded-full bg-[#3a2a1e] px-2.5 py-0.5 text-[11px] font-medium text-ink-soft">
+                🔥 {summary.data?.streak.current ?? '–'}
+              </span>
+            </div>
           </div>
 
           <p className="mt-6 px-2 text-[10px] font-bold uppercase tracking-widest text-muted">Menu</p>
@@ -93,12 +105,17 @@ export default function AppShell() {
             <Link to="/" className="text-base font-semibold tracking-tight">
               TheBridge<span className="text-sage">.</span>
             </Link>
-            <button
-              onClick={logout}
-              className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs text-ink-soft"
-            >
-              Sign out
-            </button>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-gem-soft px-2.5 py-0.5 text-[11px] font-medium text-gem">
+                💎 {summary.data?.gems.balance ?? '–'}
+              </span>
+              <button
+                onClick={logout}
+                className="rounded-full border border-line bg-surface px-3.5 py-1.5 text-xs text-ink-soft"
+              >
+                Sign out
+              </button>
+            </div>
           </header>
 
           <main className="flex-1 overflow-y-auto p-4 pb-32 md:p-7 md:pb-7">
