@@ -70,8 +70,8 @@ login screen. The first account becomes the only account — registration closes
 ## Structure
 
 - **Today** — the cockpit: quick actions (sleep taps, 💧 water, 60-second reset), weekly insights and charts
-- **Diary** — the daily check-in: 11 questions staged Morning / Day / Evening, autosaved; **editable until 12 PM the next day, then frozen**. Sealing (+5 💎) marks the day complete without locking it early
-- **Days** — every day in order: editable/frozen/sealed state at a glance, reopen any date's full record (check-in, sleep, calm sessions, meals, weight, gems)
+- **Diary** — the daily check-in: 11 questions staged Morning / Day / Evening, autosaved; **editable until midnight (end of the day), then frozen**. Sealing (+5 💎) marks the day complete without locking it early
+- **Days** — every day since onboarding, in order: editable/frozen/sealed state at a glance, reopen any date's full record (check-in, sleep, calm sessions, meals, weight, gems)
 - **Calm** — breathing plus a 5-4-3-2-1 grounding step-through, with the 60-second SOS reset
 - **Health** — weight (+BMI via height) and food / eating habits
 
@@ -84,8 +84,8 @@ GET  /api/v1/dashboard/today   → checklist state, gems, streak, 14-day sleep &
 GET  /api/v1/insights/weekly   → rhythm consistency, sleep average, calm minutes, mood, habit spotlight
 GET  /api/v1/diary/today       → today's entry (204 when empty)   PUT to upsert (+2 💎 first save, +3 💎 evening review)
 GET  /api/v1/diary/{date}      → any day's entry   PUT to edit while in the freeze window
-POST /api/v1/diary/{date}/seal → mark the day complete: +5 💎, requires evening review (does not lock; the noon freeze does)
-GET  /api/v1/days/calendar     → every day in the window: sealed, frozen, hasData, mood, calm, sleep, meals, gems
+POST /api/v1/diary/{date}/seal → mark the day complete: +5 💎, requires evening review (does not lock; the midnight freeze does)
+GET  /api/v1/days/calendar     → every day since onboarding: sealed, frozen, hasData, mood, calm, sleep, meals, gems
 GET  /api/v1/days/{date}       → the full record of one day (check-in, sleep, sessions, meals, weights, gems)
 GET  /api/v1/calm/exercises    → seeded catalog with breathing patterns
 POST /api/v1/calm/sessions     → record practice (1 💎/min + 2 💎 first of day), kind=regular|sos
@@ -112,7 +112,7 @@ Everything except `/api/v1/auth/**`, `/error` and `/actuator/health` requires
 - Diary entry +2 (once), evening review +3 (once), sleep wake +1 (once)
 - First weigh-in of the week +3
 - Sealing the day +5 (once per day — requires the evening review; a completion mark, not a lock)
-- **Freeze rule:** a day is editable until 12:00 PM the next day (your timezone), then read-only forever
+- **Freeze rule:** a day is editable until midnight (12 AM, end of that day, your timezone), then read-only forever
 - Soft daily cap of 25 gems; balance is always `SUM(gem_ledger.delta)`
 - SOS is always free and always earns like any other session
 

@@ -8,7 +8,7 @@ import type { DaySummary } from '../../lib/types'
 export default function DaysPage() {
   const query = useQuery({
     queryKey: ['days-calendar'],
-    queryFn: () => api<DaySummary[]>('/days/calendar?days=30'),
+    queryFn: () => api<DaySummary[]>('/days/calendar?days=90'),
   })
 
   if (query.isLoading) {
@@ -31,7 +31,7 @@ export default function DaysPage() {
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">Days</h1>
         <p className="mt-1 text-sm text-muted">
-          Every day, in order. A day stays editable until 12 PM the next day, then it freezes.
+          Every day since you started, in order. A day stays editable until midnight, then it freezes.
         </p>
       </header>
 

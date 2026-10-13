@@ -104,13 +104,19 @@ public class DayService {
 		return new DayRecord(date, entry, sleep, sessions, meals, weights, gems);
 	}
 
-	/** Rows for the Days list — only days that actually have something kept in them. */
+	/** Rows for the Days list — from the user's onboarding day through today. */
 	@Transactional(readOnly = true)
 	public List<DaySummary> calendar(User user, int days) {
-		int span = Math.min(Math.max(days, 1), 90);
+		int span = Math.min(Math.max(days, 1), 365);
 		DayWindow window = window(user);
 		LocalDate today = window.today();
 		LocalDate from = today.minusDays(span - 1);
+		LocalDate onboarded = user.getCreatedAt() == null
+				? from
+				: user.getCreatedAt().atZone(window.zone()).toLocalDate();
+		if (onboarded.isAfter(from)) {
+			from = onboarded;
+		}
 		Instant fromInstant = window.startOf(from);
 
 		Map<LocalDate, DiaryEntry> entries = new HashMap<>();
@@ -147,6 +153,9 @@ public class DayService {
 		List<DaySummary> result = new ArrayList<>();
 		for (int i = 0; i < span; i++) {
 			LocalDate date = from.plusDays(i);
+			if (date.isAfter(today)) {
+				break;
+			}
 			DiaryEntry entry = entries.get(date);
 			SleepLog sleep = sleepByDate.get(date);
 			int[] calm = calmByDay.getOrDefault(date, new int[2]);

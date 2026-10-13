@@ -43,7 +43,7 @@ public class AuthService {
 		user.setPasswordHash(passwordEncoder.encode(request.password()));
 		user.setDisplayName(request.displayName().trim());
 		user.setTimezone(resolveTimezone(request.timezone()));
-		user.setDayStartHour(4);
+		user.setDayStartHour(0);
 		userRepository.save(user);
 		return issue(user);
 	}

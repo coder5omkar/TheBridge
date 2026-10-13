@@ -78,7 +78,7 @@ export default function DayDetailPage() {
           )}
           {editable ? (
             <span className="rounded-full bg-sage-mist px-3 py-1 text-xs font-medium text-sage-deep">
-              ✍️ editable till 12 PM
+              ✍️ editable till midnight
             </span>
           ) : (
             <span className="rounded-full bg-paper px-3 py-1 text-xs text-muted">🔒 frozen</span>
@@ -91,7 +91,7 @@ export default function DayDetailPage() {
           to={`/diary/${record.date}`}
           className="rounded-full bg-sage px-5 py-2.5 text-center text-sm font-medium text-white transition-colors hover:bg-sage-deep"
         >
-          ✍️ {entry ? 'Edit this day' : 'Add the check-in'} · saves till 12 PM the next day
+          ✍️ {entry ? 'Edit this day' : 'Add the check-in'} · editable till midnight
         </Link>
       )}
 

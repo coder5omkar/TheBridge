@@ -34,7 +34,9 @@ public class SleepService {
 	public Response bedtime(User user, BedtimeRequest request) {
 		DayWindow window = window(user);
 		Instant bedTime = request != null && request.bedTime() != null ? request.bedTime() : Instant.now();
-		LocalDate sleepDate = window.dayOf(bedTime).plusDays(1);
+		// Bedtimes before noon belong to that same night (after-midnight); evening beds wake the next day.
+		int hour = bedTime.atZone(window.zone()).getHour();
+		LocalDate sleepDate = hour < 12 ? window.dayOf(bedTime) : window.dayOf(bedTime).plusDays(1);
 
 		SleepLog log = repository.findByUserIdAndSleepDate(user.getId(), sleepDate).orElseGet(() -> {
 			SleepLog created = new SleepLog();

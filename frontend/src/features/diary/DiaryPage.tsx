@@ -259,7 +259,7 @@ export default function DiaryPage() {
             <span className="rounded-full bg-paper px-3 py-1 text-xs text-muted">🔒 frozen</span>
           </header>
           <div className="rounded-3xl border border-line bg-surface p-8 text-center text-sm text-muted">
-            This day froze at 12 PM without a check-in.
+            This day froze at midnight without a check-in.
           </div>
         </div>
       )
@@ -277,7 +277,7 @@ export default function DiaryPage() {
             )}
             <div>
               <h1 className="text-2xl font-semibold tracking-tight">{dateLabel ?? 'Daily check-in'}</h1>
-              <p className="mt-1 text-sm text-muted">Frozen at 12 PM — read-only, kept as it was.</p>
+              <p className="mt-1 text-sm text-muted">Frozen at midnight — read-only, kept as it was.</p>
             </div>
           </div>
           <span className="flex gap-2">
@@ -358,8 +358,8 @@ export default function DiaryPage() {
             <h1 className="text-2xl font-semibold tracking-tight">{dateLabel ?? 'Daily check-in'}</h1>
             <p className="mt-1 text-sm text-muted">
               {sealed
-                ? '📔 Sealed — still editable until 12 PM the next day.'
-                : 'Everything saves itself as you go — editable until 12 PM the next day.'}
+                ? '📔 Sealed — still editable until midnight tonight.'
+                : 'Everything saves itself as you go — editable until midnight.'}
             </p>
           </div>
         </div>
@@ -582,8 +582,8 @@ export default function DiaryPage() {
 
       {sealed && (
         <p className="text-center text-xs text-muted">
-          📔 Sealed {entry?.sealedAt ? formatTime(entry.sealedAt) : ''} — still editable until 12 PM the
-          next day, then it freezes.
+          📔 Sealed {entry?.sealedAt ? formatTime(entry.sealedAt) : ''} — still editable until midnight,
+          then it freezes.
         </p>
       )}
 
