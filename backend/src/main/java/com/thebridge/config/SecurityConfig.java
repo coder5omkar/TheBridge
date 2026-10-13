@@ -65,9 +65,38 @@ public class SecurityConfig {
 		config.setAllowedOrigins(props.cors().allowedOrigins());
 		config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
 		config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
-		var source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/api/**", config);
-		return source;
+		var pathSource = new UrlBasedCorsConfigurationSource();
+		pathSource.registerCorsConfiguration("/api/**", config);
+
+		// Same-origin is always trusted (the frontend and API share one host in
+		// production), so the app works on any domain without configuration.
+		return request -> {
+			String origin = request.getHeader("Origin");
+			if (origin != null && !origin.isBlank()) {
+				String proto = firstForwarded(request, "X-Forwarded-Proto", request.getScheme());
+				String host = firstForwarded(request, "X-Forwarded-Host", request.getHeader("Host"));
+				String selfOrigin = proto + "://" + host;
+				if (origin.equalsIgnoreCase(selfOrigin)) {
+					var sameOrigin = new CorsConfiguration();
+					sameOrigin.addAllowedOrigin(origin);
+					sameOrigin.addAllowedMethod("*");
+					sameOrigin.addAllowedHeader("*");
+					return sameOrigin;
+				}
+			}
+			return pathSource.getCorsConfiguration(request);
+		};
+	}
+
+	private static String firstForwarded(jakarta.servlet.http.HttpServletRequest request, String header,
+			String fallback) {
+		String value = request.getHeader(header);
+		if (value == null || value.isBlank()) {
+			return fallback;
+		}
+		int comma = value.indexOf(',');
+		String first = comma >= 0 ? value.substring(0, comma) : value;
+		return first.trim();
 	}
 
 	private AuthenticationEntryPoint jsonEntryPoint() {
