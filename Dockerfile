@@ -6,6 +6,7 @@
 # 1. Build the frontend
 FROM node:24-alpine AS frontend
 WORKDIR /fe
+ENV NODE_OPTIONS=--max-old-space-size=512
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
 COPY frontend/ .
@@ -14,6 +15,7 @@ RUN npm run build
 # 2. Build the backend, with the frontend inside classpath:/static
 FROM eclipse-temurin:26-jdk AS backend
 WORKDIR /app
+ENV GRADLE_OPTS="-Xmx640m"
 COPY backend/gradlew ./
 COPY backend/gradle ./gradle
 COPY backend/settings.gradle backend/build.gradle ./
