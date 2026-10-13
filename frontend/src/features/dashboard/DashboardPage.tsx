@@ -5,13 +5,6 @@ import { formatMinutes } from '../../lib/format'
 import type { DashboardToday, HabitsToday } from '../../lib/types'
 import { CalmChart, SleepChart } from './Charts'
 
-const QUICK_LINKS = [
-  { to: '/calm', icon: '🧘', label: 'Calm', tint: 'bg-sage-mist' },
-  { to: '/diary', icon: '✍️', label: 'Diary', tint: 'bg-gem-soft' },
-  { to: '/health', icon: '🩺', label: 'Health', tint: 'bg-[#1d2e25]' },
-  { to: '/diary', icon: '🌿', label: 'Rhythm', tint: 'bg-[#1d2636]' },
-]
-
 export default function DashboardPage() {
   const query = useQuery({
     queryKey: ['dashboard-today'],
@@ -58,172 +51,215 @@ export default function DashboardPage() {
     }
   })
 
-  const rhythmRow = habits.data
-    ? {
-        to: '/diary',
-        icon: '🌿',
-        label: 'My rhythm',
-        done: habits.data.totalCount > 0 && habits.data.doneCount === habits.data.totalCount,
-        detail:
-          habits.data.totalCount > 0
-            ? `${habits.data.doneCount}/${habits.data.totalCount} practices · ${habits.data.weekDone} this week`
-            : 'Build your daily rhythm — one tap to start',
-      }
-    : null
+  const doneCount = habits.data?.doneCount ?? 0
+  const totalCount = habits.data?.totalCount ?? 0
+  const progress = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 
   const loop = [
-    ...(rhythmRow ? [rhythmRow] : []),
+    {
+      to: '/diary',
+      icon: '🌿',
+      tint: 'bg-[#1b2e22]',
+      label: 'My rhythm',
+      detail:
+        totalCount > 0
+          ? `${doneCount}/${totalCount} practices · ${habits.data?.weekDone ?? 0} this week`
+          : 'Build your daily rhythm — one tap to start',
+      done: totalCount > 0 && doneCount === totalCount,
+    },
     {
       to: '/diary',
       icon: '✍️',
+      tint: 'bg-sage-mist',
       label: 'Diary & thoughts',
-      done: data.today.diary.done,
       detail: data.today.diary.done
         ? `Mood ${data.today.diary.mood ?? '—'}/5 — evening review earns +3 💎`
         : 'Mood, intention, thoughts, evening review',
+      done: data.today.diary.done,
     },
     {
       to: '/calm',
       icon: '🧘',
+      tint: 'bg-[#2f2340]',
       label: 'Calm practice',
-      done: data.today.calm.sessions > 0,
       detail:
         data.today.calm.minutes > 0
           ? `${formatMinutes(data.today.calm.minutes)} practiced today`
           : 'A 60-second reset already counts',
+      done: data.today.calm.sessions > 0,
     },
     {
       to: '/diary',
       icon: '🌙',
+      tint: 'bg-[#16304a]',
       label: 'Sleep',
-      done: data.today.sleep.logged,
       detail: data.today.sleep.logged
         ? data.today.sleep.durationMinutes != null
           ? `Slept ${formatMinutes(data.today.sleep.durationMinutes)}`
           : 'Wake-up logged'
         : 'Bedtime and wake-up live in the diary',
+      done: data.today.sleep.logged,
     },
   ]
 
   return (
-    <div className="flex flex-col gap-5">
-      <header>
-        <p className="text-xs uppercase tracking-widest text-muted">{dateLabel}</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-          {greeting}, {data.user.displayName} 🌟
-        </h1>
-      </header>
-
-      <section className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
-        {QUICK_LINKS.map((item) => (
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+      {/* Main column */}
+      <div className="flex min-w-0 flex-col gap-6">
+        {/* Hero */}
+        <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#4e54f5] via-[#6d5af7] to-[#8b5cf6] p-6 text-white">
+          <span className="inline-flex rounded-full bg-white/20 px-3 py-1 text-[11px] font-medium">
+            {dateLabel}
+          </span>
+          <h1 className="mt-4 max-w-sm text-3xl font-bold leading-tight tracking-tight">
+            {greeting}, {data.user.displayName} 🌟
+          </h1>
+          <p className="mt-2 text-sm text-white/80">
+            {totalCount > 0
+              ? `${doneCount} of ${totalCount} practices checked today`
+              : 'Build your daily rhythm — one tap to start'}
+          </p>
+          <div className="mt-5 h-1.5 w-48 overflow-hidden rounded-full bg-white/25">
+            <div className="h-full rounded-full bg-white transition-all" style={{ width: `${progress}%` }} />
+          </div>
           <Link
-            key={item.label}
-            to={item.to}
-            className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-sm text-ink-soft transition-colors hover:border-sage"
+            to="/diary"
+            title="Open diary"
+            className="absolute right-5 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full bg-white text-lg text-[#4e54f5] shadow-lg transition-transform hover:scale-105"
           >
-            <span className={`flex h-8 w-8 items-center justify-center rounded-full text-base ${item.tint}`}>
-              {item.icon}
-            </span>
-            {item.label}
+            →
           </Link>
-        ))}
-      </section>
+        </section>
 
-      <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-3xl border border-line bg-surface p-5">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gem-soft text-sm">💎</span>
-            <p className="text-xs font-medium text-muted">Gems</p>
-          </div>
-          <p className="mt-3 text-3xl font-semibold text-gem">{data.gems.balance}</p>
-          <p className="mt-1 text-xs text-muted">+{data.gems.earnedToday} earned today</p>
-        </div>
-        <div className="rounded-3xl border border-line bg-surface p-5">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3a2a1e] text-sm">🔥</span>
-            <p className="text-xs font-medium text-muted">Practice streak</p>
-          </div>
-          <p className="mt-3 text-3xl font-semibold text-sage">
-            {data.streak.current}
-            <span className="ml-1 text-sm font-normal text-muted">
-              {data.streak.current === 1 ? 'day' : 'days'}
-            </span>
-          </p>
-          <p className="mt-1 text-xs text-muted">
-            {data.streak.practicedToday
-              ? 'Practiced today — beautiful.'
-              : 'Any calm practice or log keeps it alive.'}
-          </p>
-        </div>
-      </section>
-
-      <section className="rounded-3xl border border-line bg-surface p-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-sm font-semibold">This week</h2>
-          <span className="text-[10px] uppercase tracking-widest text-muted">rhythm</span>
-        </div>
-        <div className="mt-4 flex justify-between gap-1">
-          {week.map((entry, index) => (
-            <div
-              key={index}
-              className={`flex w-10 flex-col items-center gap-1 rounded-2xl py-2 ${
-                index === 6 ? 'bg-sage text-white' : 'bg-paper text-ink-soft'
-              }`}
-            >
-              <span className="text-[10px] uppercase">
-                {entry.day.toLocaleDateString(undefined, { weekday: 'narrow' })}
-              </span>
-              <span className="text-sm font-medium">{entry.day.getDate()}</span>
-              <span
-                className={`h-1 w-1 rounded-full ${
-                  entry.rhythmDone ? (index === 6 ? 'bg-white' : 'bg-sage') : 'bg-transparent'
-                }`}
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="rounded-3xl border border-line bg-surface p-6">
-        <h2 className="text-sm font-semibold">Today's loop</h2>
-        <p className="mt-1 text-xs text-muted">
-          capture → regulate → see the pattern → adjust → get rewarded
-        </p>
-        <ul className="mt-5 flex flex-col gap-3">
-          {loop.map((item) => (
-            <li key={item.label}>
-              <Link
-                to={item.to}
-                className="flex items-center gap-3 rounded-2xl border border-line bg-paper px-4 py-3 transition-colors hover:border-sage"
-              >
-                <span
-                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] ${
-                    item.done ? 'bg-sage text-white' : 'border border-line bg-surface text-muted'
-                  }`}
+        {/* Today's loop */}
+        <section>
+          <h2 className="text-xs font-bold uppercase tracking-wider">Today's loop</h2>
+          <ul className="mt-3 flex flex-col gap-2.5">
+            {loop.map((item) => (
+              <li key={item.label}>
+                <Link
+                  to={item.to}
+                  className="flex items-center gap-3.5 rounded-2xl border border-line bg-surface px-4 py-3.5 transition-colors hover:border-sage/60"
                 >
-                  {item.done ? '✓' : '○'}
-                </span>
-                <span aria-hidden>{item.icon}</span>
-                <span className="text-sm font-medium text-ink-soft">{item.label}</span>
-                <span className="ml-auto hidden text-xs text-muted sm:block">{item.detail}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
+                  <span
+                    className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl ${item.tint}`}
+                    aria-hidden
+                  >
+                    {item.icon}
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-sm font-semibold">{item.label}</span>
+                    <span className="block truncate text-xs text-muted">{item.detail}</span>
+                  </span>
+                  <span
+                    className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-[11px] ${
+                      item.done ? 'bg-sage text-white' : 'border border-line text-transparent'
+                    }`}
+                  >
+                    ✓
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-3xl border border-line bg-surface p-6">
-          <h2 className="text-sm font-semibold">Sleep · last 14 nights</h2>
-          <p className="mt-1 mb-4 text-xs text-muted">Hours slept, labelled by wake-up day</p>
-          <SleepChart points={data.charts.sleep} />
-        </div>
-        <div className="rounded-3xl border border-line bg-surface p-6">
-          <h2 className="text-sm font-semibold">Calm · last 14 days</h2>
-          <p className="mt-1 mb-4 text-xs text-muted">Minutes of breathing and grounding</p>
-          <CalmChart points={data.charts.calm} />
-        </div>
-      </section>
+        {/* Charts */}
+        <section className="flex flex-col gap-4">
+          <h2 className="text-xs font-bold uppercase tracking-wider">Insights</h2>
+          <div className="rounded-3xl border border-line bg-surface p-6">
+            <h3 className="text-sm font-semibold">Sleep · last 14 nights</h3>
+            <p className="mb-4 mt-1 text-xs text-muted">Hours slept, labelled by wake-up day</p>
+            <SleepChart points={data.charts.sleep} />
+          </div>
+          <div className="rounded-3xl border border-line bg-surface p-6">
+            <h3 className="text-sm font-semibold">Calm · last 14 days</h3>
+            <p className="mb-4 mt-1 text-xs text-muted">Minutes of breathing and grounding</p>
+            <CalmChart points={data.charts.calm} />
+          </div>
+        </section>
+      </div>
+
+      {/* Right rail */}
+      <aside className="flex flex-col gap-4 lg:pt-0">
+        <section className="rounded-3xl border border-line bg-surface p-5">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gem-soft text-base">💎</span>
+            <div>
+              <p className="text-xs font-medium text-muted">Gems</p>
+              <p className="text-xl font-bold leading-tight text-gem">{data.gems.balance}</p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-muted">+{data.gems.earnedToday} earned today</p>
+        </section>
+
+        <section className="rounded-3xl border border-line bg-surface p-5">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#3a2a1e] text-base">🔥</span>
+            <div>
+              <p className="text-xs font-medium text-muted">Practice streak</p>
+              <p className="text-xl font-bold leading-tight text-sage">
+                {data.streak.current}
+                <span className="ml-1 text-xs font-normal text-muted">
+                  {data.streak.current === 1 ? 'day' : 'days'}
+                </span>
+              </p>
+            </div>
+          </div>
+          <p className="mt-2 text-xs text-muted">
+            {data.streak.practicedToday ? 'Practiced today — beautiful.' : 'Any practice keeps it alive.'}
+          </p>
+        </section>
+
+        <section className="rounded-3xl border border-line bg-surface p-5">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider">This week</h2>
+            <span className="text-[10px] text-muted">rhythm</span>
+          </div>
+          <div className="mt-3 flex justify-between gap-0.5">
+            {week.map((entry, index) => (
+              <div
+                key={index}
+                className={`flex w-8 flex-col items-center gap-1 rounded-xl py-1.5 ${
+                  index === 6 ? 'bg-sage text-white' : 'bg-paper text-ink-soft'
+                }`}
+              >
+                <span className="text-[9px] uppercase">
+                  {entry.day.toLocaleDateString(undefined, { weekday: 'narrow' })}
+                </span>
+                <span className="text-xs font-medium">{entry.day.getDate()}</span>
+                <span
+                  className={`h-1 w-1 rounded-full ${
+                    entry.rhythmDone ? (index === 6 ? 'bg-white' : 'bg-sage') : 'bg-transparent'
+                  }`}
+                />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <Link
+          to="/calm/sos"
+          className="group rounded-3xl border border-line bg-surface p-5 transition-colors hover:border-sage/60"
+        >
+          <div className="flex items-center justify-between">
+            <h2 className="text-xs font-bold uppercase tracking-wider">Quick reset</h2>
+            <span className="text-[10px] text-muted">60 sec</span>
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-[#4e54f5] to-[#8b5cf6] text-2xl">
+              🌬️
+            </span>
+            <span className="min-w-0">
+              <span className="block text-sm font-semibold">Physiological sigh</span>
+              <span className="block text-xs text-muted">The fastest way back down</span>
+            </span>
+            <span className="ml-auto flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-white text-sm text-[#141417] shadow transition-transform group-hover:scale-105">
+              ▶
+            </span>
+          </div>
+        </Link>
+      </aside>
     </div>
   )
 }

@@ -31,7 +31,7 @@ export default function CalmPage() {
 
       <Link
         to="/calm/sos"
-        className="flex items-center gap-4 rounded-3xl bg-gradient-to-br from-sage to-[#5d52d6] p-6 text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01]"
+        className="flex items-center gap-4 rounded-3xl bg-gradient-to-br from-[#4e54f5] to-[#8b5cf6] p-6 text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01]"
       >
         <span className="text-3xl">🆘</span>
         <span>

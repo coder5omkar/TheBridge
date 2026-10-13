@@ -32,9 +32,9 @@ export function WeightChart({ points }: { points: { date: string; kg: number }[]
         <Line
           type="monotone"
           dataKey="kg"
-          stroke="#8b7cff"
+          stroke="#5b55f6"
           strokeWidth={2.5}
-          dot={{ r: 3, fill: '#8b7cff', strokeWidth: 0 }}
+          dot={{ r: 3, fill: '#5b55f6', strokeWidth: 0 }}
           activeDot={{ r: 5 }}
         />
       </LineChart>

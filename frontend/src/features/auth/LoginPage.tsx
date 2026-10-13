@@ -43,7 +43,7 @@ export default function LoginPage() {
   const registrationOpen = status.data?.registrationOpen ?? false
 
   return (
-    <div className="relative grid min-h-screen place-items-center overflow-hidden px-4">
+    <div className="relative m-3 grid min-h-[calc(100vh-1.5rem)] place-items-center overflow-hidden rounded-[28px] bg-paper px-4 shadow-2xl shadow-black/30 md:m-6 md:min-h-[calc(100vh-3rem)]">
       {/* calm background blobs */}
       <div className="pointer-events-none absolute -left-32 -top-32 h-96 w-96 rounded-full bg-sage-mist blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -right-24 h-96 w-96 rounded-full bg-gem-soft blur-3xl" />

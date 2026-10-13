@@ -1,15 +1,15 @@
 @import "tailwindcss";
 
 @theme {
-  --color-paper: #0e0e13;
-  --color-surface: #17171f;
-  --color-ink: #f2f1fb;
-  --color-ink-soft: #c6c5da;
-  --color-muted: #83829b;
-  --color-line: #272735;
-  --color-sage: #8b7cff;
-  --color-sage-deep: #a99bff;
-  --color-sage-mist: #2b2547;
+  --color-paper: #141417;
+  --color-surface: #1e1e24;
+  --color-ink: #f5f5f7;
+  --color-ink-soft: #c9c9d1;
+  --color-muted: #8b8b96;
+  --color-line: #2c2c34;
+  --color-sage: #5b55f6;
+  --color-sage-deep: #7a75ff;
+  --color-sage-mist: #26224d;
   --color-gem: #f2c94c;
   --color-gem-soft: #3a3220;
   --color-amber-soft: #342c1f;
@@ -19,7 +19,7 @@
 
 @layer base {
   html {
-    background-color: var(--color-paper);
+    background-color: #edeae2;
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
   }
@@ -27,14 +27,11 @@
   body {
     margin: 0;
     min-height: 100vh;
-    background-image:
-      radial-gradient(900px 420px at 50% -8%, rgba(139, 124, 255, 0.16), transparent 70%),
-      radial-gradient(700px 360px at 100% 0%, rgba(242, 201, 76, 0.05), transparent 60%);
-    background-attachment: fixed;
+    background-color: #edeae2;
   }
 
   ::selection {
-    background: rgba(139, 124, 255, 0.35);
+    background: rgba(91, 85, 246, 0.35);
   }
 }
 

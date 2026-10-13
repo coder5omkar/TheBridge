@@ -53,7 +53,7 @@ export function CalmChart({ points }: { points: CalmPoint[] }) {
           contentStyle={TOOLTIP_STYLE}
           labelStyle={{ color: '#c6c5da' }}
         />
-        <Bar dataKey="minutes" name="Calm" radius={[6, 6, 0, 0]} fill="#8b7cff" maxBarSize={22} />
+        <Bar dataKey="minutes" name="Calm" radius={[6, 6, 0, 0]} fill="#5b55f6" maxBarSize={22} />
       </BarChart>
     </ResponsiveContainer>
   )
