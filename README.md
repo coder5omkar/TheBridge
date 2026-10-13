@@ -67,6 +67,24 @@ Open <http://localhost:5173>.
 **First run:** the app detects an empty database and offers *Create your account* on the
 login screen. The first account becomes the only account — registration closes behind it.
 
+## Deployment
+
+The production image bakes the frontend into the backend jar — a single container:
+
+```bash
+docker build -t thebridge-app .
+docker compose up -d --build   # app + Caddy (automatic HTTPS)
+```
+
+On the server, `.env` supplies the same variables as local dev, plus:
+
+- `DOMAIN` — hostname Caddy gets a TLS certificate for (or `<ip>.sslip.io` for a free one)
+- `S3_ENABLED=true` + `S3_BUCKET` + `S3_REGION` — meal photos on S3
+  (on EC2 attach an instance role; elsewhere add AWS keys to `.env`)
+
+Suggested AWS footprint (Mumbai · ap-south-1): one `t3.micro` + Elastic IP running
+Docker Compose, one **private** S3 bucket for media, Neon Postgres as the database.
+
 ## Structure
 
 - **Today** — the cockpit: quick actions (sleep taps, 💧 water, 60-second reset), weekly insights and charts

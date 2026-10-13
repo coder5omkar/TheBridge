@@ -36,6 +36,10 @@ dependencies {
 
 	// Required by Spring Security's Argon2PasswordEncoder
 	implementation 'org.bouncycastle:bcprov-jdk18on:1.86'
+
+	// Meal photos — S3 storage when configured, local disk otherwise
+	implementation 'software.amazon.awssdk:s3:2.55.3'
+	implementation 'software.amazon.awssdk:url-connection-client:2.55.3'
 	testImplementation 'org.springframework.boot:spring-boot-starter-actuator-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
 	testImplementation 'org.springframework.boot:spring-boot-starter-flyway-test'

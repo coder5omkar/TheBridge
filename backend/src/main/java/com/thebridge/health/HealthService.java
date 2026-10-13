@@ -1,17 +1,25 @@
 package com.thebridge.health;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.net.URI;
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.temporal.IsoFields;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.thebridge.common.DayWindow;
 import com.thebridge.health.HealthDtos.MealRequest;
@@ -30,18 +38,22 @@ import com.thebridge.user.UserRepository;
 public class HealthService {
 
 	private static final Set<String> MEAL_TYPES = Set.of("breakfast", "lunch", "dinner", "snack");
+	private static final long MAX_PHOTO_BYTES = 5L * 1024 * 1024;
+	private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
 	private final WeightEntryRepository weightRepository;
 	private final MealRepository mealRepository;
 	private final UserRepository userRepository;
 	private final GemService gemService;
+	private final MediaService mediaService;
 
 	public HealthService(WeightEntryRepository weightRepository, MealRepository mealRepository,
-			UserRepository userRepository, GemService gemService) {
+			UserRepository userRepository, GemService gemService, MediaService mediaService) {
 		this.weightRepository = weightRepository;
 		this.mealRepository = mealRepository;
 		this.userRepository = userRepository;
 		this.gemService = gemService;
+		this.mediaService = mediaService;
 	}
 
 	@Transactional(readOnly = true)
@@ -87,6 +99,61 @@ public class HealthService {
 		return new SummaryResponse(buildSummary(user), gemService.rewards(user.getId(), dayStart(user), 0));
 	}
 
+	/**
+	 * Attach a (client-compressed, KB-sized) photo to a meal. Stored on S3 when
+	 * configured, on local disk otherwise. Each photo gets an unguessable token
+	 * so it renders in plain img tags.
+	 */
+	@Transactional
+	public SummaryResponse attachPhoto(User user, Long mealId, MultipartFile file) {
+		if (file == null || file.isEmpty()) {
+			throw new IllegalArgumentException("No image uploaded.");
+		}
+		if (file.getSize() > MAX_PHOTO_BYTES) {
+			throw new IllegalArgumentException("Image too large — compress to under 5 MB.");
+		}
+		String contentType = file.getContentType();
+		if (contentType == null || !contentType.startsWith("image/")) {
+			throw new IllegalArgumentException("Only image files are allowed.");
+		}
+		Meal meal = mealRepository.findById(mealId)
+				.filter(item -> item.getUserId().equals(user.getId()))
+				.orElseThrow(() -> new IllegalArgumentException("Meal not found: " + mealId));
+
+		try {
+			String key = mediaService.storeMealPhoto(user.getId(), meal.getId(), file.getBytes());
+			meal.setPhotoKey(key);
+			if (meal.getPhotoToken() == null) {
+				meal.setPhotoToken(randomToken());
+			}
+			mealRepository.save(meal);
+		} catch (IOException e) {
+			throw new IllegalStateException("Could not read the uploaded image", e);
+		}
+
+		return new SummaryResponse(buildSummary(user), gemService.rewards(user.getId(), dayStart(user), 0));
+	}
+
+	/** Serves a photo by its unguessable token (local stream or presigned S3 redirect). */
+	@Transactional(readOnly = true)
+	public ResponseEntity<byte[]> photoByToken(String token) {
+		if (token == null || token.isBlank()) {
+			return ResponseEntity.notFound().build();
+		}
+		Meal meal = mealRepository.findByPhotoToken(token).orElse(null);
+		if (meal == null || meal.getPhotoKey() == null) {
+			return ResponseEntity.notFound().build();
+		}
+		if (mediaService.s3Enabled()) {
+			return ResponseEntity.status(HttpStatus.FOUND)
+					.location(URI.create(mediaService.presignedUrl(meal.getPhotoKey())))
+					.build();
+		}
+		return mediaService.readLocal(meal.getUserId(), meal.getId())
+				.map(bytes -> ResponseEntity.ok().contentType(MediaType.IMAGE_JPEG).body(bytes))
+				.orElseGet(() -> ResponseEntity.notFound().build());
+	}
+
 	@Transactional
 	public ProfileResponse setHeight(User user, ProfileRequest request) {
 		User managed = userRepository.findById(user.getId())
@@ -94,6 +161,12 @@ public class HealthService {
 		managed.setHeightCm(BigDecimal.valueOf(request.heightCm()).setScale(1, RoundingMode.HALF_UP));
 		userRepository.save(managed);
 		return new ProfileResponse(request.heightCm());
+	}
+
+	private String randomToken() {
+		byte[] bytes = new byte[24];
+		SECURE_RANDOM.nextBytes(bytes);
+		return HexFormat.of().formatHex(bytes);
 	}
 
 	private Summary buildSummary(User user) {

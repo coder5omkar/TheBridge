@@ -1,6 +1,10 @@
 spring:
   application:
     name: thebridge
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 6MB
   config:
     # Secrets live in the repo-root .env (gitignored). Both locations are optional so
     # production deployments can inject real environment variables instead.
@@ -26,8 +30,8 @@ spring:
     enabled: true
 
 server:
-  # Local dev only; change when deploying.
-  address: 127.0.0.1
+  # Local dev binds loopback; containers override with SERVER_ADDRESS=0.0.0.0
+  address: ${SERVER_ADDRESS:127.0.0.1}
   port: 8080
 
 app:
@@ -37,7 +41,14 @@ app:
     issuer: thebridge
   cors:
     allowed-origins:
-      - http://localhost:5173
+      - ${CORS_ORIGINS:http://localhost:5173}
+  media:
+    # Local fallback folder (used when S3 is disabled or unconfigured)
+    local-dir: ${MEDIA_DIR:../uploads}
+    s3:
+      enabled: ${S3_ENABLED:false}
+      bucket: ${S3_BUCKET:}
+      region: ${S3_REGION:ap-southeast-1}
 
 management:
   endpoints:

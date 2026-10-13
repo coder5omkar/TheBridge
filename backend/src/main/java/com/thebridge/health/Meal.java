@@ -31,6 +31,12 @@ public class Meal {
 	@Column(name = "home_cooked")
 	private Boolean homeCooked;
 
+	@Column(name = "photo_key")
+	private String photoKey;
+
+	@Column(name = "photo_token")
+	private String photoToken;
+
 	@Column(name = "created_at", nullable = false, insertable = false, updatable = false)
 	private Instant createdAt;
 
@@ -76,6 +82,22 @@ public class Meal {
 
 	public void setHomeCooked(Boolean homeCooked) {
 		this.homeCooked = homeCooked;
+	}
+
+	public String getPhotoKey() {
+		return photoKey;
+	}
+
+	public void setPhotoKey(String photoKey) {
+		this.photoKey = photoKey;
+	}
+
+	public String getPhotoToken() {
+		return photoToken;
+	}
+
+	public void setPhotoToken(String photoToken) {
+		this.photoToken = photoToken;
 	}
 
 	public Instant getCreatedAt() {

@@ -157,13 +157,13 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
 
         {stepIndex === -1 ? (
           <>
-            <div className="enter-up float-soft flex h-40 w-40 items-center justify-center rounded-full bg-sage-mist text-5xl">
+            <div className="enter-up float-soft flex h-40 w-40 items-center justify-center rounded-full bg-gem-soft text-5xl">
               🧎
             </div>
             <button
               type="button"
               onClick={startGrounding}
-              className="enter-up rounded-full bg-sage px-7 py-3 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
+              className="enter-up rounded-full bg-gradient-to-br from-[#f6d365] to-[#e2a93b] px-7 py-3 text-sm font-semibold text-[#2f2508] shadow-lg shadow-gem/25 transition-all hover:scale-105"
               style={{ animationDelay: '120ms' }}
             >
               Begin · {steps.length} steps
@@ -176,7 +176,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 <span
                   key={index}
                   className={`h-1.5 rounded-full transition-all duration-300 ${
-                    index === stepIndex ? 'w-6 bg-sage' : index < stepIndex ? 'w-1.5 bg-sage/60' : 'w-1.5 bg-line'
+                    index === stepIndex ? 'w-6 bg-gem' : index < stepIndex ? 'w-1.5 bg-gem/60' : 'w-1.5 bg-line'
                   }`}
                 />
               ))}
@@ -184,7 +184,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
 
             <div
               key={stepIndex}
-              className="enter-up flex min-h-36 w-full max-w-md items-center justify-center rounded-3xl border border-line bg-surface px-8 py-10 text-center shadow-lg shadow-black/20"
+              className="enter-up flex min-h-36 w-full max-w-md items-center justify-center rounded-3xl border border-gem/25 bg-surface px-8 py-10 text-center shadow-lg shadow-gem/5"
             >
               <p className="text-xl font-medium leading-snug">{steps[stepIndex]}</p>
             </div>
@@ -194,7 +194,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 <button
                   type="button"
                   onClick={() => setStepIndex(stepIndex - 1)}
-                  className="rounded-full border border-line bg-paper px-5 py-2.5 text-sm text-ink-soft transition-all hover:scale-105 hover:border-sage"
+                  className="rounded-full border border-line bg-paper px-5 py-2.5 text-sm text-ink-soft transition-all hover:scale-105 hover:border-silver/60"
                 >
                   Back
                 </button>
@@ -203,7 +203,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 <button
                   type="button"
                   onClick={() => setStepIndex(stepIndex + 1)}
-                  className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
+                  className="rounded-full bg-gradient-to-br from-[#f6d365] to-[#e2a93b] px-7 py-2.5 text-sm font-semibold text-[#2f2508] shadow-md shadow-gem/20 transition-all hover:scale-105"
                 >
                   Next
                 </button>
@@ -211,7 +211,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 <button
                   type="button"
                   onClick={finishGrounding}
-                  className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
+                  className="rounded-full bg-gradient-to-br from-[#f6d365] to-[#e2a93b] px-7 py-2.5 text-sm font-semibold text-[#2f2508] shadow-md shadow-gem/20 transition-all hover:scale-105"
                 >
                   Finish ✓
                 </button>
@@ -269,24 +269,24 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
       </header>
 
       <div className="relative flex h-72 w-72 items-center justify-center">
-        {/* ambient light */}
+        {/* ambient light — gold and silver */}
         <span
-          className="float-soft pointer-events-none absolute -left-10 -top-6 h-36 w-36 rounded-full bg-sage/10 blur-3xl"
+          className="float-soft pointer-events-none absolute -left-10 -top-6 h-36 w-36 rounded-full bg-gem/10 blur-3xl"
           style={{ animationDuration: '9s' }}
         />
         <span
-          className="float-soft pointer-events-none absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-[#8b5cf6]/10 blur-3xl"
+          className="float-soft pointer-events-none absolute -bottom-8 -right-8 h-40 w-40 rounded-full bg-silver/10 blur-3xl"
           style={{ animationDuration: '12s', animationDelay: '-4s' }}
         />
 
-        {/* session progress ring */}
+        {/* session progress ring — silver track, golden fill */}
         <svg className="absolute inset-0 -rotate-90" viewBox="0 0 288 288" aria-hidden>
           <circle
             cx="144"
             cy="144"
             r={RING_RADIUS}
             fill="none"
-            stroke="rgba(255,255,255,0.08)"
+            stroke="rgba(201,205,217,0.15)"
             strokeWidth="3"
           />
           <circle
@@ -294,7 +294,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
             cy="144"
             r={RING_RADIUS}
             fill="none"
-            stroke="#8b7cff"
+            stroke="#f2c94c"
             strokeWidth="3"
             strokeLinecap="round"
             strokeDasharray={RING_CIRCUMFERENCE}
@@ -312,29 +312,29 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
           }}
           aria-hidden
         >
-          <span className="absolute left-1/2 top-2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-white shadow-[0_0_12px_rgba(255,255,255,0.9)]" />
+          <span className="absolute left-1/2 top-2 h-2.5 w-2.5 -translate-x-1/2 rounded-full bg-[#fff6da] shadow-[0_0_14px_rgba(242,201,76,0.95)]" />
         </div>
 
         {/* breathing glow */}
         <div
-          className="absolute h-64 w-64 rounded-full bg-sage/30 blur-2xl transition-transform ease-in-out"
+          className="absolute h-64 w-64 rounded-full bg-gem/25 blur-2xl transition-transform ease-in-out"
           style={transitionStyle}
         />
 
-        {/* the breathing circle */}
+        {/* the breathing circle — golden */}
         <div
-          className="relative flex h-64 w-64 items-center justify-center rounded-full bg-gradient-to-br from-[#5b55f6] to-[#8b5cf6] shadow-xl shadow-sage/30 transition-transform ease-in-out"
+          className="relative flex h-64 w-64 items-center justify-center rounded-full bg-gradient-to-br from-[#f6d365] via-[#eec25a] to-[#c9971c] shadow-xl shadow-gem/25 transition-transform ease-in-out"
           style={transitionStyle}
         >
           <div className="flex flex-col items-center gap-0.5">
             <span
               key={running ? clock.phaseIdx : 'idle'}
-              className={`text-sm font-medium text-white ${running ? 'phase-pop' : ''}`}
+              className={`text-sm font-semibold text-[#2f2508] ${running ? 'phase-pop' : ''}`}
             >
               {running ? phase.label : ''}
             </span>
             {running && (
-              <span className="text-2xl font-semibold tabular-nums text-white/90">
+              <span className="text-2xl font-semibold tabular-nums text-[#2f2508]/80">
                 {Math.max(1, Math.ceil(clock.phaseLeft))}
               </span>
             )}
@@ -358,7 +358,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 key={minutes}
                 type="button"
                 onClick={() => start(minutes)}
-                className="rounded-full bg-sage px-6 py-2.5 text-sm font-medium text-white transition-all hover:scale-105 hover:bg-sage-deep"
+                className="rounded-full bg-gradient-to-br from-[#f6d365] to-[#e2a93b] px-6 py-2.5 text-sm font-semibold text-[#2f2508] shadow-md shadow-gem/20 transition-all hover:scale-105"
               >
                 {minutes} min
               </button>
@@ -378,7 +378,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
       )}
 
       {finished && (
-        <p className="text-sm text-sage-deep">
+        <p className="text-sm text-gem">
           {mutation.isPending && 'Saving your practice…'}
           {mutation.isError && 'Saved locally — sync failed.'}
         </p>

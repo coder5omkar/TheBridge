@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../lib/api'
 import { formatShortDate, formatTime } from '../../lib/format'
+import { compressImage, formatBytes } from '../../lib/image'
 import GemBurst from '../../components/GemBurst'
 import type { HealthSummary, HealthSummaryResponse } from '../../lib/types'
 import { WeightChart } from './WeightChart'
@@ -36,6 +37,8 @@ export default function HealthPage() {
   const [mealType, setMealType] = useState<(typeof MEAL_TYPES)[number]['value']>(defaultMealType)
   const [mealDesc, setMealDesc] = useState('')
   const [homeCooked, setHomeCooked] = useState(false)
+  const [savingPhoto, setSavingPhoto] = useState(false)
+  const [photoInfo, setPhotoInfo] = useState<string | null>(null)
 
   const summary = useQuery({
     queryKey: ['health-summary'],
@@ -83,6 +86,42 @@ export default function HealthPage() {
       applySummary(response)
     },
   })
+
+  /** One action: photo → compressed to KB → saved under today, at this time. */
+  async function capturePhoto(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file || !file.type.startsWith('image/')) return
+    setSavingPhoto(true)
+    setPhotoInfo(null)
+    try {
+      const blob = await compressImage(file)
+      const created = await api<HealthSummaryResponse>('/health/meals', {
+        method: 'POST',
+        body: JSON.stringify({
+          mealType,
+          description: mealDesc.trim() || null,
+          homeCooked,
+        }),
+      })
+      const mealId = created.summary.todayMeals[0]?.id
+      if (!mealId) {
+        throw new Error('Could not file the photo under today')
+      }
+      const form = new FormData()
+      form.append('file', blob, 'meal.jpg')
+      await api<HealthSummaryResponse>(`/health/meals/${mealId}/photo`, { method: 'POST', body: form })
+      const fresh = await api<HealthSummary>('/health/summary')
+      setMealDesc('')
+      queryClient.setQueryData(['health-summary'], fresh)
+      queryClient.invalidateQueries({ queryKey: ['dashboard-today'] })
+      setPhotoInfo(`saved under today · ${formatBytes(blob.size)} after compression`)
+    } catch (error) {
+      setPhotoInfo(error instanceof Error ? error.message : 'Could not save the photo')
+    } finally {
+      setSavingPhoto(false)
+    }
+  }
 
   const saveHeight = useMutation({
     mutationFn: () =>
@@ -240,6 +279,33 @@ export default function HealthPage() {
             ))}
           </div>
 
+          <label
+            className={`card-shine flex cursor-pointer items-center justify-center gap-3 rounded-2xl border border-dashed px-4 py-5 text-sm transition-colors ${
+              savingPhoto
+                ? 'border-gem/50 bg-gem-soft/40 text-muted'
+                : 'border-gem/40 bg-gem-soft/20 text-ink-soft hover:border-gem hover:bg-gem-soft/40'
+            }`}
+          >
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={capturePhoto}
+              disabled={savingPhoto}
+            />
+            <span className="text-xl" aria-hidden>
+              📷
+            </span>
+            <span className="font-medium">
+              {savingPhoto
+                ? 'Saving under today…'
+                : 'Snap or choose a meal photo — saves instantly with the time'}
+            </span>
+          </label>
+          <p className="text-[10px] text-muted">
+            Photos are compressed to KB before upload{photoInfo ? ` · ${photoInfo}` : ''}
+          </p>
+
           <div className="flex flex-col gap-2 sm:flex-row">
             <input
               className="min-w-0 flex-1 rounded-xl border border-line bg-paper px-4 py-2.5 text-sm outline-none transition-colors focus:border-sage"
@@ -248,7 +314,7 @@ export default function HealthPage() {
               onKeyDown={(event) => {
                 if (event.key === 'Enter') addMeal.mutate()
               }}
-              placeholder="What did you eat? (optional)"
+              placeholder="or just type what you ate…"
               maxLength={500}
             />
             <label className="flex shrink-0 cursor-pointer items-center gap-2 rounded-xl border border-line bg-paper px-4 py-2.5 text-xs text-ink-soft">
@@ -256,7 +322,7 @@ export default function HealthPage() {
                 type="checkbox"
                 checked={homeCooked}
                 onChange={(event) => setHomeCooked(event.target.checked)}
-                className="h-4 w-4 accent-[#4e8b73]"
+                className="h-4 w-4 accent-[#e2a93b]"
               />
               🏠 Home-cooked
             </label>
@@ -280,8 +346,11 @@ export default function HealthPage() {
                 className="flex items-center gap-3 rounded-2xl border border-line bg-paper px-4 py-3"
               >
                 <span aria-hidden>{MEAL_ICONS[meal.mealType]}</span>
+                {meal.photoUrl && (
+                  <img src={meal.photoUrl} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+                )}
                 <span className="min-w-0 flex-1 truncate text-sm text-ink-soft">
-                  {meal.description || meal.mealType}
+                  {meal.description || (meal.photoUrl ? 'Meal photo' : meal.mealType)}
                 </span>
                 {meal.homeCooked && (
                   <span className="rounded-full bg-sage-mist px-2 py-0.5 text-[10px] font-medium text-sage-deep">

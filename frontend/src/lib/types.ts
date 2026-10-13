@@ -118,6 +118,7 @@ export type HealthSummary = {
     description: string | null
     homeCooked: boolean | null
     eatenAt: string
+    photoUrl: string | null
   }[]
   mealsWeek: number
   homeCookedRatioWeek: number | null
@@ -165,6 +166,7 @@ export type DayRecord = {
     description: string | null
     homeCooked: boolean | null
     eatenAt: string
+    photoUrl: string | null
   }[]
   weights: { at: string; kg: number }[]
   gemsEarned: number

@@ -1,0 +1,10 @@
+.git
+.env
+docs
+uploads
+frontend/node_modules
+frontend/dist
+backend/build
+backend/.gradle
+backend/.kotlin
+*.log

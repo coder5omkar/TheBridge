@@ -1,0 +1,8 @@
+# Automatic HTTPS for the app. DOMAIN comes from the server's .env —
+# use your domain, or a free wildcard that points at your IP
+# (e.g. DOMAIN=203-0-113-7.sslip.io).
+
+{$DOMAIN} {
+	encode gzip
+	reverse_proxy app:8080
+}

@@ -13,6 +13,8 @@
   --color-gem: #f2c94c;
   --color-gem-soft: #3a3220;
   --color-amber-soft: #342c1f;
+  --color-silver: #c9cdd9;
+  --color-silver-soft: #2a2d36;
 
   --font-sans: "Segoe UI", ui-sans-serif, system-ui, -apple-system, "Helvetica Neue", sans-serif;
 }
@@ -149,4 +151,29 @@
 
 .float-soft {
   animation: float-soft 8s ease-in-out infinite;
+}
+
+/* Metallic shine sweep for cards */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-shine::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    rgba(255, 255, 255, 0.16) 50%,
+    transparent 60%
+  );
+  transform: translateX(-130%);
+}
+
+.card-shine:hover::after {
+  transform: translateX(130%);
+  transition: transform 0.9s ease;
 }

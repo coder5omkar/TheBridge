@@ -36,11 +36,13 @@ public final class HealthDtos {
 	public record WeightPoint(LocalDate date, Instant at, double kg) {
 	}
 
-	public record MealView(Long id, String mealType, String description, Boolean homeCooked, Instant eatenAt) {
+	public record MealView(Long id, String mealType, String description, Boolean homeCooked,
+			Instant eatenAt, String photoUrl) {
 
 		public static MealView from(Meal meal) {
 			return new MealView(meal.getId(), meal.getMealType(), meal.getDescription(),
-					meal.getHomeCooked(), meal.getEatenAt());
+					meal.getHomeCooked(), meal.getEatenAt(),
+					meal.getPhotoToken() == null ? null : "/api/v1/media/" + meal.getPhotoToken());
 		}
 	}
 

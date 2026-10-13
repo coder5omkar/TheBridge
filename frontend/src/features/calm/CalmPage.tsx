@@ -3,6 +3,11 @@ import { Link } from 'react-router-dom'
 import { api } from '../../lib/api'
 import type { ExerciseView } from '../../lib/types'
 
+const ACCENTS = [
+  { chip: 'bg-gem-soft', border: 'hover:border-gem/60', glow: 'hover:shadow-gem/10' },
+  { chip: 'bg-silver-soft', border: 'hover:border-silver/50', glow: 'hover:shadow-silver/10' },
+]
+
 export default function CalmPage() {
   const query = useQuery({
     queryKey: ['calm-exercises'],
@@ -50,9 +55,12 @@ export default function CalmPage() {
       </Link>
 
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-wider">Breathing & grounding</h2>
+        <h2 className="bg-gradient-to-r from-[#f6d365] via-[#f2c94c] to-[#c9cdd9] bg-clip-text text-xs font-bold uppercase tracking-wider text-transparent">
+          Breathing & grounding
+        </h2>
         <div className="mt-3 flex flex-col gap-3">
           {playable.map((exercise, index) => {
+            const accent = ACCENTS[index % ACCENTS.length]
             const steps =
               exercise.type === 'grounding' &&
               exercise.pattern &&
@@ -64,11 +72,11 @@ export default function CalmPage() {
               <Link
                 key={exercise.id}
                 to={`/calm/${exercise.slug}`}
-                className="enter-up group flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-sage/60 hover:shadow-lg hover:shadow-sage/10"
+                className={`card-shine enter-up group flex items-center gap-4 rounded-3xl border border-line bg-surface p-5 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg ${accent.border} ${accent.glow}`}
                 style={{ animationDelay: `${120 + index * 70}ms` }}
               >
                 <span
-                  className="text-2xl transition-transform duration-300 group-hover:scale-110"
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl transition-transform duration-300 group-hover:scale-110 ${accent.chip}`}
                   aria-hidden
                 >
                   {exercise.sos ? '🆘' : exercise.type === 'grounding' ? '🧎' : '🌬️'}

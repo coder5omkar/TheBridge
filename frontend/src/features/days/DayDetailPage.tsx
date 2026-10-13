@@ -195,6 +195,9 @@ export default function DayDetailPage() {
                 className="flex items-center gap-3 rounded-2xl border border-line bg-paper px-4 py-2.5"
               >
                 <span aria-hidden>{MEAL_ICONS[meal.mealType]}</span>
+                {meal.photoUrl && (
+                  <img src={meal.photoUrl} alt="" className="h-12 w-12 shrink-0 rounded-xl object-cover" />
+                )}
                 <span className="min-w-0 flex-1 truncate text-sm text-ink-soft">
                   {meal.description || meal.mealType}
                 </span>
