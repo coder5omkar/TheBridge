@@ -48,6 +48,11 @@ export type DiaryView = {
   eveningReview: string | null
   body: string | null
   tags: string[]
+  waterCups: number | null
+  highlights: string | null
+  drained: string | null
+  gratitude: string | null
+  moved: boolean | null
   updatedAt: string
 }
 

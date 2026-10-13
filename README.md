@@ -70,7 +70,7 @@ login screen. The first account becomes the only account — registration closes
 ## Structure
 
 - **Today** — dashboard: checklist, gems, streak, sleep + calm charts
-- **Diary** — the daily hub: my rhythm (habits with streaks), mood, energy, intention, thoughts inbox, journal, sleep card, evening review
+- **Diary** — the daily check-in: an 11-question questionnaire (mood, energy, water, intention, wins, drains, gratitude, review, mind, tags, movement) plus my rhythm habits, thoughts inbox and sleep card
 - **Calm** — breathing exercises with the 60-second SOS reset
 - **Health** — weight (+BMI via height) and food / eating habits
 - **Garden** — Phase 2 gem sink

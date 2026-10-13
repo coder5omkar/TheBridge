@@ -43,6 +43,17 @@ public class DiaryEntry {
 	@Column(columnDefinition = "text[]")
 	private String[] tags = new String[0];
 
+	@Column(name = "water_cups")
+	private Integer waterCups;
+
+	private String highlights;
+
+	private String drained;
+
+	private String gratitude;
+
+	private Boolean moved;
+
 	@Column(name = "created_at", nullable = false, insertable = false, updatable = false)
 	private Instant createdAt;
 
@@ -115,6 +126,46 @@ public class DiaryEntry {
 
 	public void setTags(String[] tags) {
 		this.tags = tags;
+	}
+
+	public Integer getWaterCups() {
+		return waterCups;
+	}
+
+	public void setWaterCups(Integer waterCups) {
+		this.waterCups = waterCups;
+	}
+
+	public String getHighlights() {
+		return highlights;
+	}
+
+	public void setHighlights(String highlights) {
+		this.highlights = highlights;
+	}
+
+	public String getDrained() {
+		return drained;
+	}
+
+	public void setDrained(String drained) {
+		this.drained = drained;
+	}
+
+	public String getGratitude() {
+		return gratitude;
+	}
+
+	public void setGratitude(String gratitude) {
+		this.gratitude = gratitude;
+	}
+
+	public Boolean getMoved() {
+		return moved;
+	}
+
+	public void setMoved(Boolean moved) {
+		this.moved = moved;
 	}
 
 	public Instant getCreatedAt() {

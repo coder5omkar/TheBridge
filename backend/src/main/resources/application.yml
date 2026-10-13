@@ -33,7 +33,7 @@ server:
 app:
   jwt:
     secret: ${JWT_SECRET}
-    ttl: PT12H
+    ttl: P30D
     issuer: thebridge
   cors:
     allowed-origins:

@@ -47,12 +47,17 @@ public class DiaryService {
 			entry.setEntryDate(today);
 		}
 
-		entry.setMood(request.mood());
+			entry.setMood(request.mood());
 		entry.setEnergy(request.energy());
 		entry.setMorningIntent(trimToNull(request.morningIntent()));
 		entry.setEveningReview(trimToNull(request.eveningReview()));
 		entry.setBody(trimToNull(request.body()));
 		entry.setTags(request.tags() == null ? new String[0] : request.tags().toArray(String[]::new));
+		entry.setWaterCups(request.waterCups());
+		entry.setHighlights(trimToNull(request.highlights()));
+		entry.setDrained(trimToNull(request.drained()));
+		entry.setGratitude(trimToNull(request.gratitude()));
+		entry.setMoved(request.moved());
 		entry.setUpdatedAt(Instant.now());
 		repository.save(entry);
 
