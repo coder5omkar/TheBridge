@@ -37,6 +37,15 @@ public class SecurityConfig {
 						.requestMatchers("/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/status",
 								"/api/v1/media/**", "/actuator/health", "/error")
 						.permitAll()
+						// The SPA (static build + client routes like /days/2026-10-13) is public;
+						// everything under /api stays behind the token.
+						.requestMatchers(request -> {
+							String path = request.getRequestURI();
+							return "GET".equals(request.getMethod())
+									&& !path.startsWith("/api")
+									&& !path.startsWith("/actuator");
+						})
+						.permitAll()
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.anyRequest().authenticated())
 				.exceptionHandling(handling -> handling.authenticationEntryPoint(jsonEntryPoint()))
