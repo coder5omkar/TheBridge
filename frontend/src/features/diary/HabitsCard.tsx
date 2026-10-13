@@ -179,7 +179,7 @@ export default function HabitsCard() {
                           type="button"
                           onClick={() => archive.mutate(habit.id)}
                           disabled={archive.isPending}
-                          className="shrink-0 text-xs text-muted transition-colors hover:text-rose-700"
+                          className="shrink-0 text-xs text-muted transition-colors hover:text-rose-300"
                           title="Remove practice"
                         >
                           ✕
@@ -215,7 +215,7 @@ export default function HabitsCard() {
                 type="button"
                 onClick={() => newName.trim() && create.mutate({ name: newName.trim(), emoji: newEmoji, part: newPart })}
                 disabled={create.isPending || !newName.trim()}
-                className="shrink-0 rounded-xl bg-sage px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
+                className="shrink-0 rounded-full bg-sage px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
               >
                 Add
               </button>
@@ -257,7 +257,7 @@ export default function HabitsCard() {
       )}
 
       {(create.isError || toggle.isError || archive.isError) && (
-        <p className="mt-3 text-xs text-rose-700">
+        <p className="mt-3 text-xs text-rose-300">
           {(create.error ?? toggle.error ?? archive.error)?.message}
         </p>
       )}

@@ -73,7 +73,7 @@ export default function SleepCard() {
           type="button"
           onClick={() => bedtime.mutate()}
           disabled={bedtime.isPending}
-          className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${
+          className={`rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${
             inBedOnly
               ? 'border border-line bg-paper text-ink-soft hover:border-sage'
               : 'bg-sage text-white hover:bg-sage-deep'
@@ -85,7 +85,7 @@ export default function SleepCard() {
           type="button"
           onClick={() => wake.mutate()}
           disabled={wake.isPending}
-          className={`rounded-xl px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${
+          className={`rounded-full px-5 py-2.5 text-sm font-medium transition-colors disabled:opacity-50 ${
             inBedOnly
               ? 'bg-amber-soft text-ink hover:brightness-95'
               : 'border border-line bg-paper text-ink-soft hover:border-sage'
@@ -96,7 +96,7 @@ export default function SleepCard() {
       </div>
 
       {(bedtime.isError || wake.isError) && (
-        <p className="mt-3 text-xs text-rose-700">{(bedtime.error ?? wake.error)?.message}</p>
+        <p className="mt-3 text-xs text-rose-300">{(bedtime.error ?? wake.error)?.message}</p>
       )}
     </section>
   )

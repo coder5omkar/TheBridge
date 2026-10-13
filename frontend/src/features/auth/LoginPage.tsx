@@ -111,7 +111,7 @@ export default function LoginPage() {
           </div>
 
           {mutation.isError && (
-            <p className="mt-4 rounded-xl bg-rose-50 px-3 py-2 text-xs text-rose-700">
+            <p className="mt-4 rounded-xl bg-rose-500/10 px-3 py-2 text-xs text-rose-300">
               {mutation.error.message}
             </p>
           )}
@@ -119,7 +119,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={mutation.isPending}
-            className="mt-6 w-full rounded-xl bg-sage py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
+            className="mt-6 w-full rounded-full bg-sage py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
           >
             {mutation.isPending ? 'One moment…' : mode === 'login' ? 'Sign in' : 'Create account'}
           </button>

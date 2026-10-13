@@ -149,7 +149,7 @@ export default function HealthPage() {
               </button>
             </div>
           </label>
-          {saveHeight.isError && <p className="mt-2 text-xs text-rose-700">{saveHeight.error.message}</p>}
+          {saveHeight.isError && <p className="mt-2 text-xs text-rose-300">{saveHeight.error.message}</p>}
           {saveHeight.isSuccess && <p className="mt-2 text-xs text-muted">Height saved ✓</p>}
 
           <div className="mt-6">
@@ -196,12 +196,12 @@ export default function HealthPage() {
               type="button"
               onClick={() => weighIn.mutate()}
               disabled={weighIn.isPending || !weightInput}
-              className="shrink-0 rounded-xl bg-sage px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
+              className="shrink-0 rounded-full bg-sage px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
             >
               Log
             </button>
           </div>
-          {weighIn.isError && <p className="mt-2 text-xs text-rose-700">{weighIn.error.message}</p>}
+          {weighIn.isError && <p className="mt-2 text-xs text-rose-300">{weighIn.error.message}</p>}
 
           <div className="mt-5">
             {data.weights.length >= 2 ? (
@@ -264,12 +264,12 @@ export default function HealthPage() {
               type="button"
               onClick={() => addMeal.mutate()}
               disabled={addMeal.isPending}
-              className="shrink-0 rounded-xl bg-sage px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
+              className="shrink-0 rounded-full bg-sage px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
             >
               Add
             </button>
           </div>
-          {addMeal.isError && <p className="text-xs text-rose-700">{addMeal.error.message}</p>}
+          {addMeal.isError && <p className="text-xs text-rose-300">{addMeal.error.message}</p>}
         </div>
 
         {data.todayMeals.length > 0 && (

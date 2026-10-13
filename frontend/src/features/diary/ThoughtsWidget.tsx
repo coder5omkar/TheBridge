@@ -97,7 +97,7 @@ export default function ThoughtsWidget() {
             type="button"
             onClick={() => content.trim() && create.mutate()}
             disabled={create.isPending || !content.trim()}
-            className="shrink-0 rounded-xl bg-sage px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
+            className="shrink-0 rounded-full bg-sage px-4 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
           >
             Capture
           </button>
@@ -120,7 +120,7 @@ export default function ThoughtsWidget() {
         </div>
       </div>
 
-      {create.isError && <p className="mt-2 text-xs text-rose-700">{create.error.message}</p>}
+      {create.isError && <p className="mt-2 text-xs text-rose-300">{create.error.message}</p>}
 
       {open.length > 0 && (
         <ul className="mt-5 flex flex-col gap-2">
@@ -162,7 +162,7 @@ export default function ThoughtsWidget() {
                       type="button"
                       onClick={() => release.mutate({ id: thought.id, reframe: reframe.trim() || null })}
                       disabled={release.isPending}
-                      className="rounded-xl bg-gem px-4 py-2 text-xs font-medium text-white transition-colors hover:brightness-110 disabled:opacity-50"
+                      className="rounded-full bg-sage px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
                     >
                       {release.isPending ? 'Releasing…' : 'Release & let go · +2 💎'}
                     </button>
@@ -174,7 +174,7 @@ export default function ThoughtsWidget() {
                       Keep it open
                     </button>
                   </div>
-                  {release.isError && <p className="mt-2 text-xs text-rose-700">{release.error.message}</p>}
+                  {release.isError && <p className="mt-2 text-xs text-rose-300">{release.error.message}</p>}
                 </div>
               )}
             </li>

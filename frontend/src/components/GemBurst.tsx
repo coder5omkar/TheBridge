@@ -20,7 +20,7 @@ export default function GemBurst({ amount, onDone }: { amount: number; onDone?: 
 
   return (
     <div className="pointer-events-none fixed inset-x-0 top-24 z-50 flex justify-center">
-      <div className="gem-float flex items-center gap-1.5 rounded-full bg-gem px-5 py-2.5 text-sm font-semibold text-white shadow-lg shadow-gem/30">
+      <div className="gem-float flex items-center gap-1.5 rounded-full bg-gem px-5 py-2.5 text-sm font-semibold text-[#17130a] shadow-lg shadow-gem/30">
         <span className="text-base">💎</span> +{amount}
       </div>
     </div>

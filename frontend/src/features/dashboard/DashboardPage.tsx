@@ -5,6 +5,13 @@ import { formatMinutes } from '../../lib/format'
 import type { DashboardToday, HabitsToday } from '../../lib/types'
 import { CalmChart, SleepChart } from './Charts'
 
+const QUICK_LINKS = [
+  { to: '/calm', icon: '🧘', label: 'Calm', tint: 'bg-sage-mist' },
+  { to: '/diary', icon: '✍️', label: 'Diary', tint: 'bg-gem-soft' },
+  { to: '/health', icon: '🩺', label: 'Health', tint: 'bg-[#1d2e25]' },
+  { to: '/diary', icon: '🌿', label: 'Rhythm', tint: 'bg-[#1d2636]' },
+]
+
 export default function DashboardPage() {
   const query = useQuery({
     queryKey: ['dashboard-today'],
@@ -39,6 +46,16 @@ export default function DashboardPage() {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
+  })
+
+  const today = new Date(`${data.date}T00:00:00`)
+  const week = Array.from({ length: 7 }, (_, index) => {
+    const day = new Date(today)
+    day.setDate(day.getDate() - (6 - index))
+    return {
+      day,
+      rhythmDone: habits.data?.habits.some((habit) => habit.last7[index]) ?? false,
+    }
   })
 
   const rhythmRow = habits.data
@@ -89,23 +106,44 @@ export default function DashboardPage() {
   ]
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-5">
       <header>
         <p className="text-xs uppercase tracking-widest text-muted">{dateLabel}</p>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-          {greeting}, {data.user.displayName}
+        <h1 className="mt-1 text-3xl font-semibold tracking-tight">
+          {greeting}, {data.user.displayName} 🌟
         </h1>
       </header>
 
+      <section className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0">
+        {QUICK_LINKS.map((item) => (
+          <Link
+            key={item.label}
+            to={item.to}
+            className="flex shrink-0 items-center gap-2 rounded-full border border-line bg-surface py-1.5 pl-1.5 pr-4 text-sm text-ink-soft transition-colors hover:border-sage"
+          >
+            <span className={`flex h-8 w-8 items-center justify-center rounded-full text-base ${item.tint}`}>
+              {item.icon}
+            </span>
+            {item.label}
+          </Link>
+        ))}
+      </section>
+
       <section className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-3xl border border-line bg-surface p-6">
-          <p className="text-xs font-medium text-muted">Gems</p>
-          <p className="mt-2 text-3xl font-semibold text-gem">{data.gems.balance}</p>
+        <div className="rounded-3xl border border-line bg-surface p-5">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gem-soft text-sm">💎</span>
+            <p className="text-xs font-medium text-muted">Gems</p>
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-gem">{data.gems.balance}</p>
           <p className="mt-1 text-xs text-muted">+{data.gems.earnedToday} earned today</p>
         </div>
-        <div className="rounded-3xl border border-line bg-surface p-6">
-          <p className="text-xs font-medium text-muted">Practice streak</p>
-          <p className="mt-2 text-3xl font-semibold text-sage">
+        <div className="rounded-3xl border border-line bg-surface p-5">
+          <div className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#3a2a1e] text-sm">🔥</span>
+            <p className="text-xs font-medium text-muted">Practice streak</p>
+          </div>
+          <p className="mt-3 text-3xl font-semibold text-sage">
             {data.streak.current}
             <span className="ml-1 text-sm font-normal text-muted">
               {data.streak.current === 1 ? 'day' : 'days'}
@@ -116,6 +154,33 @@ export default function DashboardPage() {
               ? 'Practiced today — beautiful.'
               : 'Any calm practice or log keeps it alive.'}
           </p>
+        </div>
+      </section>
+
+      <section className="rounded-3xl border border-line bg-surface p-5">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold">This week</h2>
+          <span className="text-[10px] uppercase tracking-widest text-muted">rhythm</span>
+        </div>
+        <div className="mt-4 flex justify-between gap-1">
+          {week.map((entry, index) => (
+            <div
+              key={index}
+              className={`flex w-10 flex-col items-center gap-1 rounded-2xl py-2 ${
+                index === 6 ? 'bg-sage text-white' : 'bg-paper text-ink-soft'
+              }`}
+            >
+              <span className="text-[10px] uppercase">
+                {entry.day.toLocaleDateString(undefined, { weekday: 'narrow' })}
+              </span>
+              <span className="text-sm font-medium">{entry.day.getDate()}</span>
+              <span
+                className={`h-1 w-1 rounded-full ${
+                  entry.rhythmDone ? (index === 6 ? 'bg-white' : 'bg-sage') : 'bg-transparent'
+                }`}
+              />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -147,7 +212,7 @@ export default function DashboardPage() {
         </ul>
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
+      <section className="grid gap-4 md:grid-cols-2">
         <div className="rounded-3xl border border-line bg-surface p-6">
           <h2 className="text-sm font-semibold">Sleep · last 14 nights</h2>
           <p className="mt-1 mb-4 text-xs text-muted">Hours slept, labelled by wake-up day</p>

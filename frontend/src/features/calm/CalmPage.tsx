@@ -14,7 +14,7 @@ export default function CalmPage() {
     return <p className="text-sm text-muted">Gathering the exercises…</p>
   }
   if (query.isError || !query.data) {
-    return <p className="text-sm text-rose-700">Could not load exercises: {query.error?.message}</p>
+    return <p className="text-sm text-rose-300">Could not load exercises: {query.error?.message}</p>
   }
 
   const breathing = query.data.filter((exercise) => exercise.type === 'breathing')
@@ -31,7 +31,7 @@ export default function CalmPage() {
 
       <Link
         to="/calm/sos"
-        className="flex items-center gap-4 rounded-3xl bg-gradient-to-br from-gem to-[#5d52d6] p-6 text-white shadow-lg shadow-gem/25 transition-transform hover:scale-[1.01]"
+        className="flex items-center gap-4 rounded-3xl bg-gradient-to-br from-sage to-[#5d52d6] p-6 text-white shadow-lg shadow-sage/30 transition-transform hover:scale-[1.01]"
       >
         <span className="text-3xl">🆘</span>
         <span>

@@ -176,12 +176,12 @@ export default function DiaryPage() {
           type="button"
           onClick={() => mutation.mutate(form)}
           disabled={mutation.isPending}
-          className="rounded-xl bg-sage px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
+          className="rounded-full bg-sage px-7 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep disabled:opacity-50"
         >
           {mutation.isPending ? 'Saving…' : 'Save today'}
         </button>
         {savedAt && !mutation.isPending && <span className="text-xs text-muted">Saved at {savedAt} ✓</span>}
-        {mutation.isError && <span className="text-xs text-rose-700">{mutation.error.message}</span>}
+        {mutation.isError && <span className="text-xs text-rose-300">{mutation.error.message}</span>}
       </div>
     </div>
   )

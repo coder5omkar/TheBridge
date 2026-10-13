@@ -171,7 +171,7 @@ export default function CalmPlayer({ exercise, kind, autoStart = false }: Props)
                 key={minutes}
                 type="button"
                 onClick={() => start(minutes)}
-                className="rounded-xl bg-sage px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep"
+                className="rounded-full bg-sage px-6 py-2.5 text-sm font-medium text-white transition-colors hover:bg-sage-deep"
               >
                 {minutes} min
               </button>
